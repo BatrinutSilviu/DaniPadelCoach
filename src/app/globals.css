@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Keep anchored sections clear of the sticky header. */
+section[id] {
+  scroll-margin-top: 5rem;
+}
+
+@layer components {
+  .pattern-bg {
+    background-color: #f4efe6;
+    background-image: radial-gradient(#d9cdb0 1px, transparent 1px);
+    background-size: 24px 24px;
+  }
+
+  .glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(217, 205, 176, 0.4);
+  }
+
+  .glass-card-dark {
+    background: rgba(13, 56, 34, 0.7);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(217, 205, 176, 0.2);
+  }
+
+  .eyebrow {
+    @apply inline-block rounded-md bg-brand-forest/10 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-forest;
+  }
+
+  .form-label {
+    @apply mb-1 block text-xs font-semibold text-brand-beige;
+  }
+
+  .form-field {
+    @apply w-full rounded-xl border border-brand-gold/30 bg-white/10 px-4 py-3 text-white placeholder-gray-400 focus:border-brand-accent focus:outline-none;
+  }
+
+  .form-select {
+    @apply w-full rounded-xl border border-brand-gold/30 bg-brand-forest px-4 py-3 text-white focus:border-brand-accent focus:outline-none;
+  }
+}
+
+/* Admin dashboard */
+@layer components {
+  .admin-card {
+    @apply rounded-2xl border border-brand-gold/30 bg-white p-5 shadow-sm;
+  }
+
+  .admin-input {
+    @apply w-full rounded-xl border border-brand-gold/40 bg-white px-4 py-2.5 text-sm text-gray-800 focus:border-brand-forest focus:outline-none focus:ring-1 focus:ring-brand-forest;
+  }
+
+  .admin-label {
+    @apply mb-1 block text-xs font-semibold text-gray-600;
+  }
+
+  .admin-btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl bg-brand-forest px-5 py-2.5 text-sm font-bold text-white transition-all hover:bg-brand-forestLight disabled:opacity-60;
+  }
+
+  .admin-btn-secondary {
+    @apply inline-flex items-center justify-center gap-1.5 rounded-lg border border-brand-gold/40 bg-white px-3 py-1.5 text-xs font-bold text-brand-forest transition-all hover:border-brand-forest disabled:opacity-60;
+  }
+}

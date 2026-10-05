@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// A bookable course. `slug` links it to the course cards on the site.
+// `capacity` is how many bookings can share the same session (1 = private).
+model Service {
+  id          String             @id @default(cuid())
+  slug        String             @unique
+  name        String
+  durationMin Int
+  capacity    Int                @default(1)
+  order       Int                @default(0)
+  isActive    Boolean            @default(true)
+  bookings    Booking[]
+  rules       AvailabilityRule[]
+}
+
+// Recurring weekly window, e.g. "every Monday 17:00-18:30".
+// serviceId = null means the window is open for every course.
+model AvailabilityRule {
+  id        String   @id @default(cuid())
+  dayOfWeek Int // 0 = Sunday ... 6 = Saturday
+  startTime String // "HH:mm"
+  endTime   String // "HH:mm"
+  service   Service? @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId String?
+}
+
+// One-off override for a calendar date: fully closed, or a custom
+// open window (for every course) that replaces that day's weekly rules.
+model AvailabilityException {
+  id        String  @id @default(cuid())
+  date      String  @unique // "YYYY-MM-DD"
+  isClosed  Boolean @default(true)
+  startTime String?
+  endTime   String?
+}
+
+// status is "PENDING" | "CONFIRMED" | "CANCELLED" (SQLite has no enums).
+// Pending and confirmed bookings both hold their slot.
+model Booking {
+  id          String   @id @default(cuid())
+  service     Service  @relation(fields: [serviceId], references: [id])
+  serviceId   String
+  date        String // "YYYY-MM-DD"
+  startTime   String // "HH:mm"
+  endTime     String // "HH:mm"
+  location    String
+  clientName  String
+  clientPhone String
+  clientEmail String?
+  notes       String?
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+
+  @@index([date])
+}
