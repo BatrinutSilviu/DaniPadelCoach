@@ -5,7 +5,7 @@ Site + online booking for Dani, padel coach in Timișoara. Built with Next.js
 
 ## What's included
 
-- **`/`** — landing page (hero, about, courses, locations, weekly program, gallery)
+- **`/`** — landing page (hero, about, courses, locations, weekly program)
   with a booking form: pick a course, location, day and a free time slot.
 - **`/admin`** — password-protected dashboard for Dani:
   - Upcoming / past bookings; confirm or cancel, call or WhatsApp the client in one tap.
@@ -44,8 +44,8 @@ Copy `.env.example` to `.env` and set:
 
 ## Editing content
 
-- **Contacts, social links, locations, the "Program" section, gallery**: `src/lib/site.ts`.
-- **Course cards**: `src/components/Courses.tsx`. Course durations/capacities live in
+- **Contacts, social links, locations, the "Program" section**: `src/lib/site.ts`.
+- **Prices (Tarife section)**: `src/components/Pricing.tsx`. Course durations/capacities live in
   the database (seeded from `prisma/seed.ts`).
 - The public "Program" section is static text; bookable hours come from the
   availability set in `/admin`. Keep them in sync when the schedule changes.

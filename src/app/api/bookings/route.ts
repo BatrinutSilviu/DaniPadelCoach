@@ -1,10 +1,12 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { bookingCreateSchema, firstIssue } from "@/lib/validation";
 import { minutesToTime, timeToMinutes, todayDateStr } from "@/lib/date";
-import { isSlotAvailable } from "@/lib/availability";
+import { canBook, getSlot } from "@/lib/availability";
+import { MAX_PRIVATE_PARTICIPANTS } from "@/lib/site";
 import { isAdminRequest } from "@/lib/adminGuard";
 import { isHiddenFromVisitor } from "@/lib/maintenance";
+import { notifyNewBooking } from "@/lib/notify";
 
 export async function POST(req: NextRequest) {
   if (await isHiddenFromVisitor()) {
@@ -17,16 +19,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: firstIssue(parsed.error) }, { status: 400 });
   }
 
-  const { serviceId, date, startTime, ...client } = parsed.data;
+  const { serviceId, date, startTime, location, participants, forKids, children, ...client } =
+    parsed.data;
 
   const service = await prisma.service.findUnique({ where: { id: serviceId } });
   if (!service || !service.isActive) {
     return NextResponse.json({ error: "Curs necunoscut" }, { status: 404 });
   }
+  const isGroup = service.capacity > 1;
+  const maxParticipants = isGroup ? service.capacity : MAX_PRIVATE_PARTICIPANTS;
+  if (participants > maxParticipants) {
+    return NextResponse.json(
+      { error: `Maxim ${maxParticipants} jucători pentru acest curs` },
+      { status: 400 },
+    );
+  }
+  if (service.forKids && !forKids) {
+    return NextResponse.json({ error: "Acest curs este pentru copii" }, { status: 400 });
+  }
+  if (forKids && children.length !== participants) {
+    return NextResponse.json(
+      { error: "Completează numele și vârsta fiecărui copil" },
+      { status: 400 },
+    );
+  }
+  // Only meaningful for group courses; private lessons are exclusive anyway.
+  const openToOthers = !isGroup || client.openToOthers;
 
   try {
     const booking = await prisma.$transaction(async (tx) => {
-      if (!(await isSlotAvailable(tx, service, date, startTime))) {
+      const slot = await getSlot(tx, service, date, startTime);
+      if (!slot || !canBook(slot, service.capacity, participants, openToOthers, forKids)) {
         throw new Error("SLOT_UNAVAILABLE");
       }
       return tx.booking.create({
@@ -35,12 +58,19 @@ export async function POST(req: NextRequest) {
           date,
           startTime,
           endTime: minutesToTime(timeToMinutes(startTime) + service.durationMin),
+          // A window tied to a venue overrides the client's preference.
+          location: slot.location ?? location,
           ...client,
+          participants,
+          openToOthers,
+          forKids,
+          children: forKids ? { create: children } : undefined,
         },
-        include: { service: true },
+        include: { service: true, children: true },
       });
     });
 
+    after(() => notifyNewBooking(booking));
     return NextResponse.json({ booking }, { status: 201 });
   } catch (err) {
     if (err instanceof Error && err.message === "SLOT_UNAVAILABLE") {
@@ -68,7 +98,7 @@ export async function GET(req: NextRequest) {
 
   const bookings = await prisma.booking.findMany({
     where: { date: past ? { lt: today } : { gte: today } },
-    include: { service: true },
+    include: { service: true, children: true },
     orderBy: past
       ? [{ date: "desc" }, { startTime: "desc" }]
       : [{ date: "asc" }, { startTime: "asc" }],

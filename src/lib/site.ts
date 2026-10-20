@@ -10,10 +10,9 @@ export const contact = {
 
 export const navLinks = [
   { href: "#despre", label: "Despre Mine" },
-  { href: "#cursuri", label: "Cursuri" },
-  { href: "#locatii", label: "Locații" },
+  { href: "#preturi", label: "Prețuri" },
   { href: "#program", label: "Program" },
-  { href: "#galerie", label: "Galerie" },
+  { href: "#locatii", label: "Locații" },
 ];
 
 // Course slugs match the Service rows seeded in prisma/seed.ts.
@@ -22,8 +21,9 @@ export type CourseSlug = "adulti" | "copii" | "privat";
 export const locations = [
   {
     name: "Active Arena",
-    badge: "Baza Principală",
     area: "Timișoara, Zona Ronaț / Calea Torontalului",
+    // Replace with the place's "Share" link from Google Maps for an exact pin.
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=Active+Arena+Timi%C8%99oara",
     description:
       "Complex sportiv modern echipat cu terenuri panoramice indoor/outdoor, iluminat LED nocturn și facilități vestiar de top.",
     image:
@@ -31,8 +31,8 @@ export const locations = [
   },
   {
     name: "X3 Padel",
-    badge: "Baza Parteneră",
     area: "Timișoara, Zona Girocului / Freidorf",
+    mapsUrl: "https://www.google.com/maps/search/?api=1&query=X3+Padel+Timi%C8%99oara",
     description:
       "Bază dedicată pasionaților de padel cu mochetă profesională, acces facil și zonă de relaxare după meciuri.",
     image:
@@ -40,7 +40,12 @@ export const locations = [
   },
 ];
 
-export const locationChoices = ["Active Arena", "X3 Padel", "Oricare"] as const;
+export const venueNames = ["Active Arena", "X3 Padel"] as const;
+
+export const levelChoices = ["Începător", "Intermediar", "Avansat"] as const;
+// Players on one padel court.
+export const MAX_PRIVATE_PARTICIPANTS = 4;
+export const locationChoices = [...venueNames, "Oricare"] as const;
 
 export type ScheduleDay = {
   id: string;
@@ -106,23 +111,5 @@ export const schedule: ScheduleDay[] = [
         time: "10:00 - 14:00",
       },
     ],
-  },
-];
-
-export const gallery = [
-  {
-    src: "https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=800&q=80",
-    alt: "Antrenament Padel",
-    caption: "Lovituri de smash & tehnică",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=800&q=80",
-    alt: "Antrenament Copii Padel",
-    caption: "Grupa de Copii Act!ve",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1595435934249-5df7ed86e1c0?auto=format&fit=crop&w=800&q=80",
-    alt: "Teren Padel Timișoara",
-    caption: "Baza Active Arena",
   },
 ];

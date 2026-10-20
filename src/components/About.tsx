@@ -52,9 +52,7 @@ export default function About() {
             </h2>
             <p className="text-base leading-relaxed text-gray-700">
               Padelul este mai mult decât un sport pentru mine – este o comunitate și un
-              stil de viață activ. Am început să antrenez activ acum mai bine de jumătate
-              de an, susținând săptămânal în jur de <strong>12 ore de antrenament</strong>{" "}
-              intensiv și dedicat.
+              stil de viață activ.
             </p>
             <p className="text-base leading-relaxed text-gray-700">
               În cadrul comunității <strong>Act!ve Timișoara</strong>, am creat proiectul{" "}

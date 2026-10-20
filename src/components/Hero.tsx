@@ -2,7 +2,6 @@ import Image from "next/image";
 import { ArrowRight, Award, Clock } from "lucide-react";
 
 const stats = [
-  { value: "12h+", label: "Antrenamente / Săptămână" },
   { value: "2 Baze", label: "Active Arena & X3 Padel" },
   { value: "Copii & Adulți", label: "Grupe dedicate" },
 ];
@@ -42,7 +41,7 @@ export default function Hero() {
                 href="#contact"
                 className="flex w-full transform items-center justify-center gap-3 rounded-xl bg-brand-accentBright px-8 py-4 text-base font-extrabold text-brand-dark shadow-lg shadow-emerald-900/40 transition-all hover:-translate-y-1 hover:bg-emerald-400 hover:shadow-emerald-500/30 sm:w-auto"
               >
-                <span>Rezervă un Antrenament</span>
+                <span>Vezi Programul</span>
                 <ArrowRight className="h-5 w-5" />
               </a>
               <a
@@ -54,7 +53,7 @@ export default function Hero() {
               </a>
             </div>
 
-            <div className="grid grid-cols-3 gap-4 border-t border-white/10 pt-6 text-center lg:text-left">
+            <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-6 text-center lg:text-left">
               {stats.map((stat) => (
                 <div key={stat.label}>
                   <p className="text-2xl font-extrabold text-brand-beige sm:text-3xl">

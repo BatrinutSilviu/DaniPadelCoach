@@ -3,12 +3,15 @@
 import { useEffect, useState } from "react";
 import { Plus, Trash2 } from "lucide-react";
 import { DAY_NAMES_RO, formatDateRo } from "@/lib/date";
+import { venueNames } from "@/lib/site";
 
 interface Rule {
   id: string;
   dayOfWeek: number;
   startTime: string;
   endTime: string;
+  location: string | null;
+  kidsOnly: boolean;
   service: { name: string } | null;
 }
 
@@ -23,10 +26,52 @@ interface Exception {
   isClosed: boolean;
   startTime: string | null;
   endTime: string | null;
+  location: string | null;
+  kidsOnly: boolean;
 }
 
 // Monday-first order for display.
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
+
+const ANY_VENUE_LABEL = "Oricare locație";
+
+function KidsCheckbox({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
+  return (
+    <label className="col-span-2 flex items-center gap-2 text-sm text-gray-700">
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(e) => onChange(e.target.checked)}
+        className="accent-brand-forest"
+      />
+      Doar pentru copii
+    </label>
+  );
+}
+
+function KidsBadge() {
+  return (
+    <span className="rounded-full bg-brand-gold/20 px-2 py-0.5 text-xs font-semibold text-brand-forest">
+      Copii
+    </span>
+  );
+}
+
+function VenueSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
+  return (
+    <div className="col-span-2">
+      <label className="admin-label">Locație</label>
+      <select className="admin-input" value={value} onChange={(e) => onChange(e.target.value)}>
+        <option value="">{ANY_VENUE_LABEL} (clientul alege)</option>
+        {venueNames.map((v) => (
+          <option key={v} value={v}>
+            {v}
+          </option>
+        ))}
+      </select>
+    </div>
+  );
+}
 
 export default function AvailabilityEditor() {
   const [rules, setRules] = useState<Rule[] | null>(null);
@@ -38,12 +83,16 @@ export default function AvailabilityEditor() {
   const [ruleStart, setRuleStart] = useState("18:00");
   const [ruleEnd, setRuleEnd] = useState("20:00");
   const [ruleServiceId, setRuleServiceId] = useState("");
+  const [ruleLocation, setRuleLocation] = useState("");
+  const [ruleKids, setRuleKids] = useState(false);
   const [savingRule, setSavingRule] = useState(false);
 
   const [exDate, setExDate] = useState("");
   const [exClosed, setExClosed] = useState(true);
   const [exStart, setExStart] = useState("10:00");
   const [exEnd, setExEnd] = useState("14:00");
+  const [exLocation, setExLocation] = useState("");
+  const [exKids, setExKids] = useState(false);
   const [savingException, setSavingException] = useState(false);
 
   async function loadAll() {
@@ -100,6 +149,8 @@ export default function AvailabilityEditor() {
         startTime: ruleStart,
         endTime: ruleEnd,
         serviceId: ruleServiceId || null,
+        location: ruleLocation || null,
+        kidsOnly: ruleKids,
       });
     } finally {
       setSavingRule(false);
@@ -116,6 +167,8 @@ export default function AvailabilityEditor() {
         isClosed: exClosed,
         startTime: exClosed ? undefined : exStart,
         endTime: exClosed ? undefined : exEnd,
+        location: exClosed ? null : exLocation || null,
+        kidsOnly: !exClosed && exKids,
       });
       if (ok) setExDate("");
     } finally {
@@ -193,6 +246,8 @@ export default function AvailabilityEditor() {
               onChange={(e) => setRuleEnd(e.target.value)}
             />
           </div>
+          <VenueSelect value={ruleLocation} onChange={setRuleLocation} />
+          <KidsCheckbox checked={ruleKids} onChange={setRuleKids} />
           <button
             type="submit"
             className="admin-btn-primary col-span-2"
@@ -216,7 +271,9 @@ export default function AvailabilityEditor() {
               <span>
                 <strong className="text-brand-forest">{DAY_NAMES_RO[r.dayOfWeek]}</strong> ·{" "}
                 {r.startTime} - {r.endTime} ·{" "}
-                <span className="text-gray-500">{r.service?.name ?? "Toate cursurile"}</span>
+                <span className="text-gray-500">{r.service?.name ?? "Toate cursurile"}</span> ·{" "}
+                <span className="text-gray-500">{r.location ?? ANY_VENUE_LABEL}</span>
+                {r.kidsOnly && <> <KidsBadge /></>}
               </span>
               <button
                 type="button"
@@ -280,6 +337,8 @@ export default function AvailabilityEditor() {
                   onChange={(e) => setExEnd(e.target.value)}
                 />
               </div>
+              <VenueSelect value={exLocation} onChange={setExLocation} />
+              <KidsCheckbox checked={exKids} onChange={setExKids} />
             </>
           )}
           <button
@@ -304,7 +363,11 @@ export default function AvailabilityEditor() {
             >
               <span>
                 <strong className="capitalize text-brand-forest">{formatDateRo(ex.date)}</strong>{" "}
-                · {ex.isClosed ? "Închis" : `${ex.startTime} - ${ex.endTime}`}
+                ·{" "}
+                {ex.isClosed
+                  ? "Închis"
+                  : `${ex.startTime} - ${ex.endTime} · ${ex.location ?? ANY_VENUE_LABEL}`}
+                {ex.kidsOnly && <> <KidsBadge /></>}
               </span>
               <button
                 type="button"

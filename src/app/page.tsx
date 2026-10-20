@@ -1,10 +1,9 @@
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import About from "@/components/About";
-import Courses from "@/components/Courses";
+import Pricing from "@/components/Pricing";
 import Locations from "@/components/Locations";
 import Schedule from "@/components/Schedule";
-import Gallery from "@/components/Gallery";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import { CourseSelectionProvider } from "@/components/CourseSelection";
@@ -21,7 +20,7 @@ export default async function Home() {
   const services = await prisma.service.findMany({
     where: { isActive: true },
     orderBy: { order: "asc" },
-    select: { id: true, slug: true, name: true, durationMin: true },
+    select: { id: true, slug: true, name: true, durationMin: true, capacity: true, forKids: true },
   });
 
   return (
@@ -30,11 +29,10 @@ export default async function Home() {
       <main>
         <Hero />
         <About />
-        <Courses />
-        <Locations />
+        <Pricing durations={Object.fromEntries(services.map((s) => [s.slug, s.durationMin]))} />
         <Schedule />
-        <Gallery />
         <Contact services={services} />
+        <Locations />
       </main>
       <Footer />
     </CourseSelectionProvider>

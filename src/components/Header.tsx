@@ -28,7 +28,7 @@ export default function Header() {
 
           <div className="hidden items-center gap-3 md:flex">
             <a
-              href="#contact"
+              href="#preturi"
               className="flex items-center gap-2 rounded-xl bg-brand-accentBright px-5 py-2.5 font-bold text-brand-dark shadow-lg shadow-emerald-900/20 transition-all hover:-translate-y-0.5 hover:bg-emerald-400 hover:shadow-emerald-500/30"
             >
               <CalendarCheck className="h-4 w-4" />
@@ -61,7 +61,7 @@ export default function Header() {
             </a>
           ))}
           <a
-            href="#contact"
+            href="#preturi"
             onClick={() => setOpen(false)}
             className="mt-4 block w-full rounded-xl bg-brand-accentBright py-3 text-center font-bold text-brand-dark"
           >

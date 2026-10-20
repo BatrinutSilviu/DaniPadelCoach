@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { Check, MapPin, MessageSquare, Phone, X } from "lucide-react";
+import { Check, MapPin, MessageSquare, Phone, Users, X } from "lucide-react";
 import { formatDateRo } from "@/lib/date";
 
 type Status = "PENDING" | "CONFIRMED" | "CANCELLED";
@@ -16,6 +16,11 @@ interface Booking {
   clientPhone: string;
   clientEmail: string | null;
   notes: string | null;
+  level: string | null;
+  participants: number;
+  openToOthers: boolean;
+  forKids: boolean;
+  children: { id: string; name: string; age: number }[];
   status: Status;
   service: { name: string };
 }
@@ -159,6 +164,22 @@ export default function BookingsList() {
                   <MapPin className="h-3.5 w-3.5" /> {b.location}
                 </span>
               </p>
+              <p className="flex flex-wrap items-center gap-x-2 text-sm text-gray-600">
+                <span className="inline-flex items-center gap-1">
+                  <Users className="h-3.5 w-3.5" />
+                  {b.participants === 1 ? "1 jucător" : `${b.participants} jucători`}
+                </span>
+                {b.level && <span>· {b.level}</span>}
+                {!b.openToOthers && <span>· nu acceptă alți jucători</span>}
+              </p>
+              {b.forKids && (
+                <p className="text-sm text-gray-700">
+                  <span className="mr-1 rounded-full bg-brand-gold/20 px-2 py-0.5 text-xs font-semibold text-brand-forest">
+                    Copii
+                  </span>
+                  {b.children.map((c) => `${c.name} (${c.age} ani)`).join(", ")}
+                </p>
+              )}
               <p className="text-sm text-gray-700">
                 {b.clientName} · {b.clientPhone}
                 {b.clientEmail && <> · {b.clientEmail}</>}

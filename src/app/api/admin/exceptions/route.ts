@@ -29,11 +29,13 @@ export async function POST(req: NextRequest) {
   const { date, isClosed } = parsed.data;
   const startTime = isClosed ? null : parsed.data.startTime;
   const endTime = isClosed ? null : parsed.data.endTime;
+  const location = isClosed ? null : parsed.data.location;
+  const kidsOnly = !isClosed && parsed.data.kidsOnly;
 
   const exception = await prisma.availabilityException.upsert({
     where: { date },
-    create: { date, isClosed, startTime, endTime },
-    update: { isClosed, startTime, endTime },
+    create: { date, isClosed, startTime, endTime, location, kidsOnly },
+    update: { isClosed, startTime, endTime, location, kidsOnly },
   });
 
   return NextResponse.json({ exception }, { status: 201 });

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { ArrowRight, MapPin } from "lucide-react";
+import { MapPin, Navigation } from "lucide-react";
 import SectionHeading from "@/components/SectionHeading";
 import { locations } from "@/lib/site";
 
@@ -28,9 +28,6 @@ export default function Locations() {
                     sizes="(min-width: 768px) 50vw, 100vw"
                     className="object-cover opacity-80"
                   />
-                  <div className="absolute left-4 top-4 rounded-md border border-brand-gold/30 bg-brand-forest/90 px-3 py-1 text-xs font-bold text-brand-beige">
-                    {loc.badge}
-                  </div>
                 </div>
                 <div className="p-6">
                   <h3 className="mb-2 text-2xl font-bold text-brand-forest">{loc.name}</h3>
@@ -41,13 +38,15 @@ export default function Locations() {
                   <p className="mb-4 text-sm leading-relaxed text-gray-600">{loc.description}</p>
                 </div>
               </div>
-              <div className="p-6 pt-0">
+              <div className="flex flex-wrap items-center justify-between gap-4 p-6 pt-0">
                 <a
-                  href="#contact"
-                  className="inline-flex items-center gap-2 text-sm font-bold text-brand-forest transition-colors hover:text-brand-accent"
+                  href={loc.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-brand-gold/40 px-4 py-2 text-sm font-semibold text-brand-forest transition-colors hover:border-brand-accent hover:text-brand-accent"
                 >
-                  <span>Programează o ședință aici</span>
-                  <ArrowRight className="h-4 w-4" />
+                  <Navigation className="h-4 w-4" />
+                  <span>Vezi pe hartă</span>
                 </a>
               </div>
             </div>
