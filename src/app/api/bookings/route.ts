@@ -4,8 +4,13 @@ import { bookingCreateSchema, firstIssue } from "@/lib/validation";
 import { minutesToTime, timeToMinutes, todayDateStr } from "@/lib/date";
 import { isSlotAvailable } from "@/lib/availability";
 import { isAdminRequest } from "@/lib/adminGuard";
+import { isHiddenFromVisitor } from "@/lib/maintenance";
 
 export async function POST(req: NextRequest) {
+  if (await isHiddenFromVisitor()) {
+    return NextResponse.json({ error: "Programările nu sunt încă deschise" }, { status: 503 });
+  }
+
   const body = await req.json().catch(() => null);
   const parsed = bookingCreateSchema.safeParse(body);
   if (!parsed.success) {

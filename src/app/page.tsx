@@ -8,12 +8,16 @@ import Gallery from "@/components/Gallery";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
 import { CourseSelectionProvider } from "@/components/CourseSelection";
+import ComingSoon from "@/components/ComingSoon";
 import { prisma } from "@/lib/prisma";
+import { isHiddenFromVisitor } from "@/lib/maintenance";
 
 // Services come from the database, so render on each request.
 export const dynamic = "force-dynamic";
 
 export default async function Home() {
+  if (await isHiddenFromVisitor()) return <ComingSoon />;
+
   const services = await prisma.service.findMany({
     where: { isActive: true },
     orderBy: { order: "asc" },

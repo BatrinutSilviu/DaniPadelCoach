@@ -1,7 +1,7 @@
 import { contact } from "@/lib/site";
 
 // lucide-react no longer ships brand icons, so these are inlined.
-function InstagramIcon() {
+export function InstagramIcon() {
   return (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
       <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
