@@ -1,0 +1,27 @@
+services:
+  app:
+    build: .
+    container_name: dani-padel
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      DATABASE_URL: file:/app/data/prod.db
+    volumes:
+      - data:/app/data
+    networks:
+      - traefik
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=${TRAEFIK_NETWORK:-traefik}
+      - traefik.http.routers.dani-padel.rule=Host(`${APP_DOMAIN}`)
+      - traefik.http.routers.dani-padel.entrypoints=${TRAEFIK_ENTRYPOINT:-websecure}
+      - traefik.http.routers.dani-padel.tls.certresolver=${TRAEFIK_CERTRESOLVER:-letsencrypt}
+      - traefik.http.services.dani-padel.loadbalancer.server.port=3000
+
+volumes:
+  data:
+
+networks:
+  traefik:
+    name: ${TRAEFIK_NETWORK:-traefik}
+    external: true
