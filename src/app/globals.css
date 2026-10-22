@@ -6,9 +6,15 @@ html {
   scroll-behavior: smooth;
 }
 
-/* Keep anchored sections clear of the sticky header. */
+/* Keep anchored sections clear of the sticky header (h-16, sm:h-20). */
 section[id] {
-  scroll-margin-top: 5rem;
+  scroll-margin-top: 4rem;
+}
+
+@media (min-width: 640px) {
+  section[id] {
+    scroll-margin-top: 5rem;
+  }
 }
 
 @layer components {
@@ -54,7 +60,7 @@ section[id] {
   }
 
   .admin-input {
-    @apply w-full rounded-xl border border-brand-gold/40 bg-white px-4 py-2.5 text-sm text-gray-800 focus:border-brand-forest focus:outline-none focus:ring-1 focus:ring-brand-forest;
+    @apply w-full rounded-xl border border-brand-gold/40 bg-white px-4 py-2.5 text-base text-gray-800 focus:border-brand-forest sm:text-sm focus:outline-none focus:ring-1 focus:ring-brand-forest;
   }
 
   .admin-label {

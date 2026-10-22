@@ -21,6 +21,21 @@ model Service {
   isActive    Boolean            @default(true)
   bookings    Booking[]
   rules       AvailabilityRule[]
+  priceTiers  PriceTier[]
+}
+
+// One row of a course's price table, e.g. "Duo (2 persoane)".
+// Rows are seeded; the admin only edits the amounts.
+model PriceTier {
+  id        String  @id @default(cuid())
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId String
+  label     String
+  order     Int     @default(0)
+  // Amount in lei, per the unit in the label; null = not set yet.
+  price     Int?
+
+  @@unique([serviceId, label])
 }
 
 // Recurring weekly window, e.g. "every Monday 17:00-18:30".
@@ -85,4 +100,17 @@ model BookingChild {
   bookingId String
   name      String
   age       Int
+}
+
+// Shown in the Events section of the site while `date` is today or later.
+model Event {
+  id          String   @id @default(cuid())
+  title       String
+  date        String // "YYYY-MM-DD"
+  startTime   String? // "HH:mm"
+  location    String
+  description String
+  createdAt   DateTime @default(now())
+
+  @@index([date])
 }

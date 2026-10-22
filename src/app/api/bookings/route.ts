@@ -19,8 +19,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: firstIssue(parsed.error) }, { status: 400 });
   }
 
-  const { serviceId, date, startTime, location, participants, forKids, children, ...client } =
-    parsed.data;
+  const { serviceId, date, startTime, participants, children, ...client } = parsed.data;
 
   const service = await prisma.service.findUnique({ where: { id: serviceId } });
   if (!service || !service.isActive) {
@@ -34,9 +33,8 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  if (service.forKids && !forKids) {
-    return NextResponse.json({ error: "Acest curs este pentru copii" }, { status: 400 });
-  }
+  // The course decides whether the booking is for children.
+  const forKids = service.forKids;
   if (forKids && children.length !== participants) {
     return NextResponse.json(
       { error: "Completează numele și vârsta fiecărui copil" },
@@ -58,8 +56,7 @@ export async function POST(req: NextRequest) {
           date,
           startTime,
           endTime: minutesToTime(timeToMinutes(startTime) + service.durationMin),
-          // A window tied to a venue overrides the client's preference.
-          location: slot.location ?? location,
+          location: slot.location,
           ...client,
           participants,
           openToOthers,

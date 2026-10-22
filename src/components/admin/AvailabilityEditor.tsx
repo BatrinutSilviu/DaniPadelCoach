@@ -33,7 +33,8 @@ interface Exception {
 // Monday-first order for display.
 const WEEK_ORDER = [1, 2, 3, 4, 5, 6, 0];
 
-const ANY_VENUE_LABEL = "Oricare locație";
+// Shown on intervals that predate venues being required.
+const NO_VENUE_LABEL = "Fără locație – nu apare la rezervări";
 
 function KidsCheckbox({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
@@ -62,7 +63,6 @@ function VenueSelect({ value, onChange }: { value: string; onChange: (v: string)
     <div className="col-span-2">
       <label className="admin-label">Locație</label>
       <select className="admin-input" value={value} onChange={(e) => onChange(e.target.value)}>
-        <option value="">{ANY_VENUE_LABEL} (clientul alege)</option>
         {venueNames.map((v) => (
           <option key={v} value={v}>
             {v}
@@ -83,15 +83,14 @@ export default function AvailabilityEditor() {
   const [ruleStart, setRuleStart] = useState("18:00");
   const [ruleEnd, setRuleEnd] = useState("20:00");
   const [ruleServiceId, setRuleServiceId] = useState("");
-  const [ruleLocation, setRuleLocation] = useState("");
-  const [ruleKids, setRuleKids] = useState(false);
+  const [ruleLocation, setRuleLocation] = useState<string>(venueNames[0]);
   const [savingRule, setSavingRule] = useState(false);
 
   const [exDate, setExDate] = useState("");
   const [exClosed, setExClosed] = useState(true);
   const [exStart, setExStart] = useState("10:00");
   const [exEnd, setExEnd] = useState("14:00");
-  const [exLocation, setExLocation] = useState("");
+  const [exLocation, setExLocation] = useState<string>(venueNames[0]);
   const [exKids, setExKids] = useState(false);
   const [savingException, setSavingException] = useState(false);
 
@@ -109,6 +108,7 @@ export default function AvailabilityEditor() {
       }
       setRules(rulesData.rules);
       setServices(rulesData.services);
+      setRuleServiceId((id) => id || rulesData.services[0]?.id || "");
       setExceptions(exData.exceptions);
     } catch {
       setError("Eroare de rețea la încărcarea disponibilității");
@@ -140,6 +140,20 @@ export default function AvailabilityEditor() {
     await loadAll();
   }
 
+  async function changeRuleVenue(id: string, location: string) {
+    setError(null);
+    const res = await fetch(`/api/admin/availability/${id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ location }),
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      setError(data.error ?? "Salvarea a eșuat");
+    }
+    await loadAll();
+  }
+
   async function handleAddRule(e: React.FormEvent) {
     e.preventDefault();
     setSavingRule(true);
@@ -148,9 +162,8 @@ export default function AvailabilityEditor() {
         dayOfWeek,
         startTime: ruleStart,
         endTime: ruleEnd,
-        serviceId: ruleServiceId || null,
-        location: ruleLocation || null,
-        kidsOnly: ruleKids,
+        serviceId: ruleServiceId,
+        location: ruleLocation,
       });
     } finally {
       setSavingRule(false);
@@ -167,7 +180,7 @@ export default function AvailabilityEditor() {
         isClosed: exClosed,
         startTime: exClosed ? undefined : exStart,
         endTime: exClosed ? undefined : exEnd,
-        location: exClosed ? null : exLocation || null,
+        location: exClosed ? null : exLocation,
         kidsOnly: !exClosed && exKids,
       });
       if (ok) setExDate("");
@@ -220,7 +233,6 @@ export default function AvailabilityEditor() {
               value={ruleServiceId}
               onChange={(e) => setRuleServiceId(e.target.value)}
             >
-              <option value="">Toate cursurile</option>
               {services.map((s) => (
                 <option key={s.id} value={s.id}>
                   {s.name}
@@ -247,11 +259,10 @@ export default function AvailabilityEditor() {
             />
           </div>
           <VenueSelect value={ruleLocation} onChange={setRuleLocation} />
-          <KidsCheckbox checked={ruleKids} onChange={setRuleKids} />
           <button
             type="submit"
             className="admin-btn-primary col-span-2"
-            disabled={savingRule}
+            disabled={savingRule || !ruleServiceId}
           >
             <Plus className="h-4 w-4" />
             {savingRule ? "Se adaugă…" : "Adaugă interval"}
@@ -266,15 +277,33 @@ export default function AvailabilityEditor() {
           {sortedRules?.map((r) => (
             <div
               key={r.id}
-              className="flex items-center justify-between rounded-xl border border-brand-gold/20 bg-brand-beigeLight/50 px-4 py-2 text-sm"
+              className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-brand-gold/20 bg-brand-beigeLight/50 px-4 py-2 text-sm"
             >
-              <span>
+              <span className="w-full sm:w-auto sm:flex-1">
                 <strong className="text-brand-forest">{DAY_NAMES_RO[r.dayOfWeek]}</strong> ·{" "}
                 {r.startTime} - {r.endTime} ·{" "}
-                <span className="text-gray-500">{r.service?.name ?? "Toate cursurile"}</span> ·{" "}
-                <span className="text-gray-500">{r.location ?? ANY_VENUE_LABEL}</span>
+                <span className="text-gray-500">{r.service?.name ?? "Toate cursurile"}</span>
                 {r.kidsOnly && <> <KidsBadge /></>}
               </span>
+              <select
+                aria-label="Locația intervalului"
+                value={r.location ?? ""}
+                onChange={(e) => changeRuleVenue(r.id, e.target.value)}
+                className={`min-w-0 flex-1 rounded-lg border px-2 py-1 text-base sm:flex-none sm:text-sm ${
+                  r.location ? "border-brand-gold/30 bg-white" : "border-red-300 bg-red-50 text-red-700"
+                }`}
+              >
+                {!r.location && (
+                  <option value="" disabled>
+                    {NO_VENUE_LABEL}
+                  </option>
+                )}
+                {venueNames.map((v) => (
+                  <option key={v} value={v}>
+                    {v}
+                  </option>
+                ))}
+              </select>
               <button
                 type="button"
                 onClick={() => remove(`/api/admin/availability/${r.id}`)}
@@ -366,7 +395,7 @@ export default function AvailabilityEditor() {
                 ·{" "}
                 {ex.isClosed
                   ? "Închis"
-                  : `${ex.startTime} - ${ex.endTime} · ${ex.location ?? ANY_VENUE_LABEL}`}
+                  : `${ex.startTime} - ${ex.endTime} · ${ex.location ?? NO_VENUE_LABEL}`}
                 {ex.kidsOnly && <> <KidsBadge /></>}
               </span>
               <button

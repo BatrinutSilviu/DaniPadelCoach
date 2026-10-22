@@ -5,7 +5,7 @@ import { locations } from "@/lib/site";
 
 export default function Locations() {
   return (
-    <section id="locatii" className="pattern-bg border-y border-brand-gold/20 py-20">
+    <section id="locatii" className="pattern-bg border-y border-brand-gold/20 py-14 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
           eyebrow="Unde ne Antrenăm"
@@ -20,14 +20,16 @@ export default function Locations() {
               className="flex flex-col justify-between overflow-hidden rounded-2xl border border-brand-gold/30 bg-white shadow-md transition-all hover:shadow-xl"
             >
               <div>
-                <div className="relative h-48 overflow-hidden bg-brand-forest">
-                  <Image
-                    src={loc.image}
-                    alt={`${loc.name} Timișoara`}
-                    fill
-                    sizes="(min-width: 768px) 50vw, 100vw"
-                    className="object-cover opacity-80"
-                  />
+                <div className="flex h-40 items-center justify-center bg-brand-forest p-6 sm:h-48 sm:p-8">
+                  <div className="relative h-full w-full">
+                    <Image
+                      src={loc.logo}
+                      alt={`Logo ${loc.name}`}
+                      fill
+                      sizes="(min-width: 768px) 40vw, 80vw"
+                      className="object-contain"
+                    />
+                  </div>
                 </div>
                 <div className="p-6">
                   <h3 className="mb-2 text-2xl font-bold text-brand-forest">{loc.name}</h3>
@@ -35,7 +37,6 @@ export default function Locations() {
                     <MapPin className="h-4 w-4 shrink-0 text-brand-accent" />
                     {loc.area}
                   </p>
-                  <p className="mb-4 text-sm leading-relaxed text-gray-600">{loc.description}</p>
                 </div>
               </div>
               <div className="flex flex-wrap items-center justify-between gap-4 p-6 pt-0">

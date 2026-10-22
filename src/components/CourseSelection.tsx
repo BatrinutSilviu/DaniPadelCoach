@@ -3,7 +3,7 @@
 import { createContext, useContext, useState } from "react";
 import type { CourseSlug } from "@/lib/site";
 
-// Lets the course cards preselect a course in the contact form.
+// Lets the course cards preselect a course in the booking section.
 type CourseSelection = {
   course: CourseSlug;
   setCourse: (course: CourseSlug) => void;

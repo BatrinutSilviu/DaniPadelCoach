@@ -21,7 +21,7 @@ type Db = Prisma.TransactionClient;
 type Window = {
   startTime: string;
   endTime: string;
-  location: string | null;
+  location: string;
   kidsOnly: boolean;
 };
 type BookedRange = {
@@ -32,7 +32,7 @@ type BookedRange = {
   openToOthers: boolean;
   forKids: boolean;
 };
-// location = null means the client picks the venue.
+// Each slot belongs to exactly one venue.
 // placesLeft = free places in a group session; null for private lessons,
 // which are exclusive.
 // kids = true: only bookings for children fit; false: only adults (a group
@@ -40,7 +40,7 @@ type BookedRange = {
 export type Slot = {
   time: string;
   available: boolean;
-  location: string | null;
+  location: string;
   placesLeft: number | null;
   kids: boolean | null;
 };
@@ -76,7 +76,8 @@ function slotsForDay(params: {
   const isGroup = service.capacity > 1;
   const slots = new Map<number, Omit<Slot, "time"> & { windowKids: boolean }>();
 
-  for (const window of windows) {
+  const ordered = [...windows].sort((a, b) => a.startTime.localeCompare(b.startTime));
+  for (const window of ordered) {
     const windowEnd = timeToMinutes(window.endTime);
     for (
       let start = timeToMinutes(window.startTime);
@@ -111,8 +112,9 @@ function slotsForDay(params: {
         kids: windowKids ? true : sessionKids,
         available: placesLeft > 0,
         placesLeft: isGroup ? placesLeft : null,
-        // Overlapping windows at different venues leave the choice open.
-        location: prev && prev.location !== window.location ? null : window.location,
+        // A slot has one venue: where windows at different venues overlap,
+        // the one that starts first keeps it.
+        location: prev?.location ?? window.location,
       });
     }
   }
@@ -160,8 +162,9 @@ export async function getAvailableSlots(
   for (let date = start; date < end; date = addDays(date, 1)) {
     const exception = exceptions.find((e) => e.date === date);
     let windows: Window[];
+    // Windows without a venue are not bookable until the admin sets one.
     if (exception) {
-      windows = exception.isClosed
+      windows = exception.isClosed || !exception.location
         ? []
         : [
             {
@@ -173,7 +176,9 @@ export async function getAvailableSlots(
           ];
     } else {
       const dow = dateStrToDate(date).getDay();
-      windows = rules.filter((r) => r.dayOfWeek === dow);
+      windows = rules.flatMap((r) =>
+        r.dayOfWeek === dow && r.location ? [{ ...r, location: r.location }] : [],
+      );
     }
     if (windows.length === 0) continue;
 

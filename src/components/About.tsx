@@ -1,5 +1,39 @@
 import Image from "next/image";
 import { CircleCheck, ShieldCheck, Users } from "lucide-react";
+import { InstagramIcon } from "@/components/Footer";
+import { community } from "@/lib/site";
+
+// lucide-react has no padel racket, so it is drawn here. Drawn diagonally,
+// it looks small at the shared icon size, hence the larger box.
+function PadelRacketIcon(_: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" className="-my-0.5 h-5 w-5" aria-hidden="true">
+      <g transform="rotate(-40 12 12)">
+        <rect x="6" y="1" width="12" height="13.5" rx="6" />
+        <path d="M10.5 14.5v2.5M13.5 14.5v2.5" />
+        <rect x="10.25" y="17" width="3.5" height="6" rx="1" />
+        <g fill="currentColor" stroke="none">
+          <circle cx="10" cy="5.5" r="0.9" />
+          <circle cx="14" cy="5.5" r="0.9" />
+          <circle cx="12" cy="8" r="0.9" />
+          <circle cx="10" cy="10.5" r="0.9" />
+          <circle cx="14" cy="10.5" r="0.9" />
+        </g>
+      </g>
+    </svg>
+  );
+}
+
+// A wide wordmark: keeps the icon height, takes the width it needs.
+function ActiveLogoIcon(_: { className?: string }) {
+  return <Image src="/logos/active.png" alt="" width={512} height={118} className="h-4 w-auto" />;
+}
+
+const communityLinks = [
+  { href: community.instagram, label: "@activetimisoara", icon: InstagramIcon },
+  { href: community.padelSite, label: "Act!ve Padel", icon: PadelRacketIcon },
+  { href: community.website, label: "activetimisoara.ro", icon: ActiveLogoIcon },
+];
 
 const highlights = [
   {
@@ -16,12 +50,12 @@ const highlights = [
 
 export default function About() {
   return (
-    <section id="despre" className="pattern-bg border-b border-brand-gold/20 py-20">
+    <section id="despre" className="pattern-bg border-b border-brand-gold/20 py-14 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 items-center gap-12 lg:grid-cols-12">
           <div className="lg:col-span-5">
             <div className="relative">
-              <div className="relative h-96 w-full overflow-hidden rounded-2xl border-4 border-white bg-brand-forest shadow-xl">
+              <div className="relative h-64 w-full overflow-hidden sm:h-96 rounded-2xl border-4 border-white bg-brand-forest shadow-xl">
                 <Image
                   src="https://images.unsplash.com/photo-1622279457486-62dcc4a431d6?auto=format&fit=crop&w=800&q=80"
                   alt="Antrenament padel"
@@ -61,6 +95,25 @@ export default function About() {
               <strong>PadelMBA</strong>, pun pe primul loc tehnica corectă, prevenirea
               accidentărilor și tactica de joc.
             </p>
+            <p className="text-base leading-relaxed text-gray-700">
+              Act!ve Timișoara este o comunitate de oameni care aleg mișcarea: ne
+              antrenăm împreună, organizăm meciuri și evenimente și ne bucurăm de sport
+              dincolo de teren. Intră în comunitate și află ce urmează:
+            </p>
+            <div className="flex flex-wrap gap-3">
+              {communityLinks.map(({ href, label, icon: Icon }) => (
+                <a
+                  key={href}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-brand-gold/40 bg-white px-4 py-2 text-sm font-semibold text-brand-forest transition-colors hover:border-brand-accent hover:text-brand-accent"
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </a>
+              ))}
+            </div>
 
             <div className="grid grid-cols-1 gap-4 pt-2 sm:grid-cols-2">
               {highlights.map(({ icon: Icon, title, text }) => (

@@ -11,7 +11,7 @@ export default function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-brand-gold/20 bg-brand-forest/95 text-white backdrop-blur-md">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div className="flex h-20 items-center justify-between">
+        <div className="flex h-16 items-center justify-between sm:h-20">
           <Logo />
 
           <nav className="hidden items-center space-x-6 text-sm font-medium md:flex">
@@ -28,7 +28,7 @@ export default function Header() {
 
           <div className="hidden items-center gap-3 md:flex">
             <a
-              href="#preturi"
+              href="#program"
               className="flex items-center gap-2 rounded-xl bg-brand-accentBright px-5 py-2.5 font-bold text-brand-dark shadow-lg shadow-emerald-900/20 transition-all hover:-translate-y-0.5 hover:bg-emerald-400 hover:shadow-emerald-500/30"
             >
               <CalendarCheck className="h-4 w-4" />
@@ -61,7 +61,7 @@ export default function Header() {
             </a>
           ))}
           <a
-            href="#preturi"
+            href="#program"
             onClick={() => setOpen(false)}
             className="mt-4 block w-full rounded-xl bg-brand-accentBright py-3 text-center font-bold text-brand-dark"
           >

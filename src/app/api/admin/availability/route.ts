@@ -12,7 +12,7 @@ export async function GET() {
       include: { service: { select: { name: true } } },
       orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
     }),
-    prisma.service.findMany({ orderBy: { order: "asc" } }),
+    prisma.service.findMany({ where: { isActive: true }, orderBy: { order: "asc" } }),
   ]);
   return NextResponse.json({ rules, services });
 }

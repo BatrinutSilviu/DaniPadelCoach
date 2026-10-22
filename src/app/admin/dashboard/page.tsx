@@ -1,5 +1,7 @@
 import BookingsList from "@/components/admin/BookingsList";
 import AvailabilityEditor from "@/components/admin/AvailabilityEditor";
+import PricesEditor from "@/components/admin/PricesEditor";
+import EventsEditor from "@/components/admin/EventsEditor";
 
 export default function DashboardPage() {
   return (
@@ -15,6 +17,20 @@ export default function DashboardPage() {
         <h2 className="text-2xl font-extrabold text-brand-forest">Disponibilitate</h2>
         <div className="mt-4">
           <AvailabilityEditor />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-extrabold text-brand-forest">Prețuri</h2>
+        <div className="mt-4">
+          <PricesEditor />
+        </div>
+      </section>
+
+      <section>
+        <h2 className="text-2xl font-extrabold text-brand-forest">Evenimente</h2>
+        <div className="mt-4">
+          <EventsEditor />
         </div>
       </section>
     </div>

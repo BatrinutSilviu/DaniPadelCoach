@@ -1,14 +1,13 @@
 import Image from "next/image";
-import { ArrowRight, Award, Clock } from "lucide-react";
+import { ArrowRight, Award, Tag } from "lucide-react";
 
 const stats = [
-  { value: "2 Baze", label: "Active Arena & X3 Padel" },
   { value: "Copii & Adulți", label: "Grupe dedicate" },
 ];
 
 export default function Hero() {
   return (
-    <section className="relative overflow-hidden bg-brand-forest py-16 text-white lg:py-24">
+    <section className="relative overflow-hidden bg-brand-forest py-10 text-white sm:py-16 lg:py-24">
       <div className="absolute inset-0 bg-[radial-gradient(#d9cdb0_1px,transparent_1px)] opacity-10 [background-size:16px_16px]" />
       <div className="pointer-events-none absolute -right-40 -top-40 h-96 w-96 rounded-full bg-brand-accent/20 blur-3xl" />
       <div className="pointer-events-none absolute -bottom-40 -left-40 h-96 w-96 rounded-full bg-brand-gold/20 blur-3xl" />
@@ -38,22 +37,22 @@ export default function Hero() {
 
             <div className="flex flex-col items-center justify-center gap-4 pt-2 sm:flex-row lg:justify-start">
               <a
-                href="#contact"
+                href="#program"
                 className="flex w-full transform items-center justify-center gap-3 rounded-xl bg-brand-accentBright px-8 py-4 text-base font-extrabold text-brand-dark shadow-lg shadow-emerald-900/40 transition-all hover:-translate-y-1 hover:bg-emerald-400 hover:shadow-emerald-500/30 sm:w-auto"
               >
-                <span>Vezi Programul</span>
+                <span>Programează-te</span>
                 <ArrowRight className="h-5 w-5" />
               </a>
               <a
-                href="#program"
+                href="#preturi"
                 className="flex w-full items-center justify-center gap-2 rounded-xl border border-brand-gold/30 bg-white/10 px-6 py-4 text-base font-semibold text-brand-beige transition-all hover:bg-white/15 sm:w-auto"
               >
-                <Clock className="h-5 w-5" />
-                <span>Vezi Programul</span>
+                <Tag className="h-5 w-5" />
+                <span>Vezi Tarifele</span>
               </a>
             </div>
 
-            <div className="grid grid-cols-2 gap-4 border-t border-white/10 pt-6 text-center lg:text-left">
+            <div className="grid grid-cols-1 gap-4 border-t border-white/10 pt-6 text-center lg:text-left">
               {stats.map((stat) => (
                 <div key={stat.label}>
                   <p className="text-2xl font-extrabold text-brand-beige sm:text-3xl">
@@ -69,7 +68,7 @@ export default function Hero() {
             <div className="relative w-full max-w-md">
               <div className="absolute -inset-2 rounded-3xl bg-gradient-to-r from-brand-gold to-brand-accent opacity-30 blur-lg" />
               <div className="relative overflow-hidden rounded-2xl border-2 border-brand-beige/30 bg-brand-forest shadow-2xl">
-                <div className="relative h-[420px] w-full">
+                <div className="relative h-72 w-full sm:h-[420px]">
                   <Image
                     src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=800&q=80"
                     alt="Dani - Antrenor Padel"
