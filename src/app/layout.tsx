@@ -9,7 +9,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Dani - Antrenor Padel Timișoara | Act!ve Padel Academy",
+  title: "Dani - antrenor padel Timișoara | Act!ve Padel Academy",
   description:
     "Antrenamente de padel pentru adulți și copii în Timișoara cu Dani, antrenor certificat PadelMBA. Active Arena & X3 Padel.",
 };

@@ -12,7 +12,11 @@ export async function GET() {
     select: {
       id: true,
       name: true,
-      priceTiers: { orderBy: { order: "asc" }, select: { id: true, label: true, price: true } },
+      priceTiers: {
+        orderBy: { order: "asc" },
+        select: { id: true, label: true, location: true, price: true },
+      },
+      venues: { select: { id: true, location: true, isOffered: true } },
     },
   });
   return NextResponse.json({ services });

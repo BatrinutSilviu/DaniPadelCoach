@@ -16,7 +16,7 @@ export const community = {
 };
 
 export const navLinks = [
-  { href: "#despre", label: "Despre Mine" },
+  { href: "#despre", label: "Despre mine" },
   { href: "#preturi", label: "Tarife" },
   { href: "#locatii", label: "Locații" },
   { href: "#evenimente", label: "Evenimente" },

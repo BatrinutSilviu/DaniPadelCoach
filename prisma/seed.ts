@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { venueNames } from "../src/lib/site";
 
 const prisma = new PrismaClient();
 
@@ -20,15 +21,26 @@ const rules: {
 
 async function main() {
   const services = [
-    { slug: "adulti", name: "Padel Adulți", durationMin: 60, capacity: 4, order: 0 },
-    { slug: "copii", name: "Padel Copii", durationMin: 60, capacity: 8, order: 1, forKids: true },
+    { slug: "adulti", name: "Padel adulți", durationMin: 60, capacity: 4, order: 0 },
+    { slug: "copii", name: "Padel copii", durationMin: 60, capacity: 8, order: 1, forKids: true },
   ];
   for (const s of services) {
     await prisma.service.upsert({
       where: { slug: s.slug },
       create: s,
-      update: { forKids: s.forKids ?? false },
+      update: { name: s.name, forKids: s.forKids ?? false },
     });
+  }
+
+  // Every course starts out offered at every venue; the admin turns them off.
+  for (const service of await prisma.service.findMany()) {
+    for (const location of venueNames) {
+      await prisma.serviceVenue.upsert({
+        where: { serviceId_location: { serviceId: service.id, location } },
+        create: { serviceId: service.id, location },
+        update: {},
+      });
+    }
   }
 
   // Price table rows per course, with optional starting amounts;
@@ -39,23 +51,32 @@ async function main() {
       { label: "Duo (2 persoane)" },
       { label: "Grup (3-4 persoane)" },
     ],
-    // The court rental is split between the children who attend.
     copii: [
       { label: "Antrenament / copil", price: 40 },
-      { label: "Chiria terenului / ședință" },
     ],
   };
   for (const [slug, tiers] of Object.entries(priceTiers)) {
     const service = await prisma.service.findUnique({ where: { slug } });
     if (!service) continue;
     for (const [order, { label, price }] of tiers.entries()) {
-      await prisma.priceTier.upsert({
-        where: { serviceId_label: { serviceId: service.id, label } },
-        create: { serviceId: service.id, label, order, price },
-        update: {},
+      // Prices used to be shared by all venues; those amounts seed each venue.
+      const shared = await prisma.priceTier.findUnique({
+        where: { serviceId_label_location: { serviceId: service.id, label, location: "" } },
       });
+      for (const location of venueNames) {
+        await prisma.priceTier.upsert({
+          where: { serviceId_label_location: { serviceId: service.id, label, location } },
+          create: { serviceId: service.id, label, location, order, price: shared?.price ?? price },
+          update: {},
+        });
+      }
     }
+    // Rows dropped from the list above are removed from the site too.
+    await prisma.priceTier.deleteMany({
+      where: { serviceId: service.id, label: { notIn: tiers.map((t) => t.label) } },
+    });
   }
+  await prisma.priceTier.deleteMany({ where: { location: "" } });
 
   if ((await prisma.availabilityRule.count()) === 0) {
     const bySlug = new Map(

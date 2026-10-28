@@ -8,8 +8,8 @@ export default function Locations() {
     <section id="locatii" className="pattern-bg border-y border-brand-gold/20 py-14 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
-          eyebrow="Unde ne Antrenăm"
-          title="Baze Sportive Partenere în Timișoara"
+          eyebrow="Unde ne antrenăm"
+          title="Baze sportive partenere în Timișoara"
           subtitle="Colaborăm cu cele mai moderne terenuri de padel din oraș pentru condiții excelente de joc."
         />
 

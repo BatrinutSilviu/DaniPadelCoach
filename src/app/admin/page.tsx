@@ -41,7 +41,7 @@ export default function AdminLoginPage() {
         <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-brand-gold to-brand-beige text-xl font-black text-brand-forest">
           A!
         </div>
-        <h1 className="mt-5 text-2xl font-extrabold text-brand-forest">Panou Admin</h1>
+        <h1 className="mt-5 text-2xl font-extrabold text-brand-forest">Panou admin</h1>
         <p className="mt-1 text-sm text-gray-600">
           Autentifică-te pentru a gestiona programările.
         </p>

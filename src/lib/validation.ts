@@ -50,6 +50,10 @@ export const priceTierSchema = z.object({
   price: z.number().int().min(0, "Prețul nu poate fi negativ").max(10000).nullable(),
 });
 
+export const serviceVenueSchema = z.object({
+  isOffered: z.boolean(),
+});
+
 export const availabilityRuleCreateSchema = z
   .object({
     dayOfWeek: z.number().int().min(0).max(6),

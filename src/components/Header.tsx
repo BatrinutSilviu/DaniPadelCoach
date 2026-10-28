@@ -65,7 +65,7 @@ export default function Header() {
             onClick={() => setOpen(false)}
             className="mt-4 block w-full rounded-xl bg-brand-accentBright py-3 text-center font-bold text-brand-dark"
           >
-            Programează-te Acum
+            Programează-te acum
           </a>
         </div>
       )}

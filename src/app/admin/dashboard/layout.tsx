@@ -12,7 +12,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               A!
             </div>
             <div>
-              <h1 className="font-extrabold">Panou Admin</h1>
+              <h1 className="font-extrabold">Panou admin</h1>
               <p className="text-xs text-brand-beige">Programări & disponibilitate</p>
             </div>
           </div>

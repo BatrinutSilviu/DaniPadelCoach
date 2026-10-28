@@ -137,7 +137,7 @@ export async function getAvailableSlots(
   const start = fromDate < today ? today : fromDate;
   const end = addDays(start, days);
 
-  const [rules, exceptions, bookings] = await Promise.all([
+  const [rules, exceptions, bookings, closedVenues] = await Promise.all([
     db.availabilityRule.findMany({
       where: { OR: [{ serviceId: service.id }, { serviceId: null }] },
     }),
@@ -156,7 +156,12 @@ export async function getAvailableSlots(
         forKids: true,
       },
     }),
+    db.serviceVenue.findMany({
+      where: { serviceId: service.id, isOffered: false },
+      select: { location: true },
+    }),
   ]);
+  const offeredAt = (location: string) => !closedVenues.some((v) => v.location === location);
 
   const result: { date: string; slots: Slot[] }[] = [];
   for (let date = start; date < end; date = addDays(date, 1)) {
@@ -180,6 +185,8 @@ export async function getAvailableSlots(
         r.dayOfWeek === dow && r.location ? [{ ...r, location: r.location }] : [],
       );
     }
+    // Venues where this course isn't trained don't give it slots.
+    windows = windows.filter((w) => offeredAt(w.location));
     if (windows.length === 0) continue;
 
     const slots = slotsForDay({

@@ -36,7 +36,7 @@ export async function notifyNewBooking(booking: BookingWithDetails): Promise<voi
 
   try {
     await transport.sendMail({
-      from: `"Programări Padel" <${SMTP_USER}>`,
+      from: `"Programări padel" <${SMTP_USER}>`,
       to: NOTIFY_EMAIL,
       replyTo: booking.clientEmail ?? undefined,
       subject: `Programare nouă: ${booking.clientName} – ${date}, ${booking.startTime}`,

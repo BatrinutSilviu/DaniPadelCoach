@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { contact } from "@/lib/site";
 
 // lucide-react no longer ships brand icons, so these are inlined.
@@ -11,10 +12,19 @@ export function InstagramIcon({ className = "h-4 w-4" }: { className?: string })
   );
 }
 
-function FacebookIcon() {
+export function FacebookIcon({ className = "h-4 w-4" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
       <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+    </svg>
+  );
+}
+
+export function WhatsAppIcon({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className} aria-hidden="true">
+      <path d="M3 21l1.65-3.8a9 9 0 1 1 3.4 2.9l-5.05.9" />
+      <path d="M9 10a.5.5 0 0 0 1 0V9a.5.5 0 0 0-1 0v1a5 5 0 0 0 5 5h1a.5.5 0 0 0 0-1h-1a.5.5 0 0 0 0 1" />
     </svg>
   );
 }
@@ -25,12 +35,16 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center justify-between gap-6 text-center md:flex-row md:text-left">
           <div className="flex items-center gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-gold font-black text-brand-forest">
-              A!
-            </div>
+            <Image
+              src="/logos/active-padel-academy-light.svg"
+              alt="Act!ve Padel Academy"
+              width={1596}
+              height={952}
+              className="h-12 w-auto"
+            />
             <div>
               <p className="text-sm font-bold text-white">Act!ve Padel Academy Timișoara</p>
-              <p className="text-xs text-gray-500">Dani - Antrenor Certificat PadelMBA</p>
+              <p className="text-xs text-gray-500">Dani - antrenor certificat PadelMBA</p>
             </div>
           </div>
 

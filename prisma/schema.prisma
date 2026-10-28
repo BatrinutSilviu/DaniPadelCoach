@@ -22,20 +22,38 @@ model Service {
   bookings    Booking[]
   rules       AvailabilityRule[]
   priceTiers  PriceTier[]
+  venues      ServiceVenue[]
 }
 
-// One row of a course's price table, e.g. "Duo (2 persoane)".
-// Rows are seeded; the admin only edits the amounts.
+// Whether Dani trains this course at a venue (e.g. no kids at X3 Padel).
+// When not, the venue's prices are hidden and its slots aren't bookable
+// for the course. Rows are seeded for every course and venue.
+model ServiceVenue {
+  id        String  @id @default(cuid())
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  serviceId String
+  // Venue name from venueNames in src/lib/site.ts.
+  location  String
+  isOffered Boolean @default(true)
+
+  @@unique([serviceId, location])
+}
+
+// One row of a course's price table at one venue, e.g. "Duo (2 persoane)"
+// at "X3 Padel". Rows are seeded; the admin only edits the amounts.
 model PriceTier {
   id        String  @id @default(cuid())
   service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
   serviceId String
   label     String
+  // Venue name from venueNames in src/lib/site.ts; "" only on rows from
+  // before prices were per venue, which the seed migrates and removes.
+  location  String  @default("")
   order     Int     @default(0)
   // Amount in lei, per the unit in the label; null = not set yet.
   price     Int?
 
-  @@unique([serviceId, label])
+  @@unique([serviceId, label, location])
 }
 
 // Recurring weekly window, e.g. "every Monday 17:00-18:30".

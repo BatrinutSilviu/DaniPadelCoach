@@ -1,8 +1,21 @@
-import Image from "next/image";
-import { ArrowRight, Award, Tag } from "lucide-react";
+import { ArrowRight, Award, ShieldCheck, Tag } from "lucide-react";
+import PhotoCarousel from "@/components/PhotoCarousel";
+import { FacebookIcon, InstagramIcon, WhatsAppIcon } from "@/components/Footer";
+import { contact } from "@/lib/site";
 
-const stats = [
-  { value: "Copii & Adulți", label: "Grupe dedicate" },
+const photos = [
+  { src: "/photos/about/dani-1.jpg", alt: "Dani la antrenament de padel" },
+  { src: "/photos/about/dani-4.jpg", alt: "Dani în tricoul Act!ve Padel Academy" },
+  { src: "/photos/about/dani-2.jpg", alt: "Dani pregătind un exercițiu pe teren" },
+  { src: "/photos/about/dani-5.jpg", alt: "Dani jucând padel în nocturnă" },
+  { src: "/photos/about/dani-3.jpg", alt: "Dani demonstrând o lovitură la fileu" },
+  { src: "/photos/about/dani-6.jpg", alt: "Dani executând un smash" },
+];
+
+const socials = [
+  { href: contact.instagram, label: "Instagram", icon: InstagramIcon },
+  { href: contact.facebook, label: "Facebook", icon: FacebookIcon },
+  { href: `https://wa.me/${contact.whatsappNumber}`, label: "WhatsApp", icon: WhatsAppIcon },
 ];
 
 export default function Hero() {
@@ -17,13 +30,13 @@ export default function Hero() {
           <div className="space-y-6 text-center lg:col-span-7 lg:text-left">
             <div className="inline-flex items-center gap-2 rounded-full border border-brand-gold/30 bg-brand-gold/15 px-3.5 py-1.5 text-xs font-semibold uppercase tracking-wide text-brand-beige sm:text-sm">
               <Award className="h-4 w-4 text-brand-accentBright" />
-              <span>Antrenor Certificat PadelMBA</span>
+              <span>Antrenor certificat PadelMBA</span>
             </div>
 
             <h1 className="text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-6xl">
-              Îmbunătățește-ți Jocul de{" "}
+              Îmbunătățește-ți jocul de{" "}
               <span className="bg-gradient-to-r from-brand-beige via-emerald-300 to-brand-accentBright bg-clip-text text-transparent">
-                Padel
+                padel
               </span>{" "}
               în Timișoara
             </h1>
@@ -48,18 +61,22 @@ export default function Hero() {
                 className="flex w-full items-center justify-center gap-2 rounded-xl border border-brand-gold/30 bg-white/10 px-6 py-4 text-base font-semibold text-brand-beige transition-all hover:bg-white/15 sm:w-auto"
               >
                 <Tag className="h-5 w-5" />
-                <span>Vezi Tarifele</span>
+                <span>Vezi tarifele</span>
               </a>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 border-t border-white/10 pt-6 text-center lg:text-left">
-              {stats.map((stat) => (
-                <div key={stat.label}>
-                  <p className="text-2xl font-extrabold text-brand-beige sm:text-3xl">
-                    {stat.value}
-                  </p>
-                  <p className="text-xs font-medium text-gray-300">{stat.label}</p>
-                </div>
+            <div className="flex flex-wrap items-center justify-center gap-2 border-t border-white/10 pt-6 lg:justify-start">
+              {socials.map(({ href, label, icon: Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-brand-gold/30 bg-white/5 px-3 py-2 text-xs sm:gap-2 sm:px-4 sm:text-sm font-semibold text-brand-beige transition-colors hover:bg-white/15"
+                >
+                  <Icon className="h-4 w-4" />
+                  {label}
+                </a>
               ))}
             </div>
           </div>
@@ -68,19 +85,23 @@ export default function Hero() {
             <div className="relative w-full max-w-md">
               <div className="absolute -inset-2 rounded-3xl bg-gradient-to-r from-brand-gold to-brand-accent opacity-30 blur-lg" />
               <div className="relative overflow-hidden rounded-2xl border-2 border-brand-beige/30 bg-brand-forest shadow-2xl">
-                <div className="relative h-72 w-full sm:h-[420px]">
-                  <Image
-                    src="https://images.unsplash.com/photo-1554068865-24cecd4e34b8?auto=format&fit=crop&w=800&q=80"
-                    alt="Dani - Antrenor Padel"
-                    fill
-                    priority
+                {/* The photos are portrait, so the slot is too. */}
+                <div className="relative aspect-[4/5] w-full">
+                  <PhotoCarousel
+                    photos={photos}
                     sizes="(min-width: 1024px) 448px, 100vw"
-                    className="object-cover object-center opacity-90 transition-transform duration-500 hover:scale-105"
+                    priority
                   />
                 </div>
-                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-dark via-brand-forest/90 to-transparent p-6">
+                <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-dark via-brand-forest/90 to-transparent p-4 sm:p-6">
                   <h3 className="text-xl font-bold text-white">Dani</h3>
-                  <p className="text-sm text-brand-beige">Padel Coach & Fondator Act!ve Academy</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="whitespace-nowrap text-xs text-brand-beige sm:text-sm">Fondator Act!ve Academy</p>
+                    <span className="glass-card flex shrink-0 items-center gap-1.5 rounded-full border border-brand-gold/40 px-2.5 py-1 text-xs font-bold text-brand-forest shadow-lg">
+                      <ShieldCheck className="h-4 w-4" />
+                      Certificat PadelMBA
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>

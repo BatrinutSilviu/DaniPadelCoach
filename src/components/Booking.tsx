@@ -94,9 +94,9 @@ export default function Booking({ services }: { services: BookableService[] }) {
       <div className="relative z-10 mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
         <div className="mx-auto mb-10 max-w-3xl space-y-4 text-center">
           <span className="rounded-md bg-brand-gold/20 px-3 py-1 text-xs font-bold uppercase tracking-wider text-brand-beige">
-            Program & Disponibilitate
+            Program & disponibilitate
           </span>
-          <h2 className="text-3xl font-extrabold text-white sm:text-4xl">Hai la un Antrenament!</h2>
+          <h2 className="text-3xl font-extrabold text-white sm:text-4xl">Hai la un antrenament!</h2>
           <p className="text-sm leading-relaxed text-gray-300">
             Alege cursul și ziua, apoi apasă pe o oră liberă și completează detaliile. Dani îți
             confirmă programarea telefonic sau pe WhatsApp.
@@ -496,7 +496,7 @@ function SlotBookingForm({
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="form-name" className="form-label">
-            Nume & Prenume *
+            Nume & prenume *
           </label>
           <input
             id="form-name"
@@ -511,7 +511,7 @@ function SlotBookingForm({
         </div>
         <div>
           <label htmlFor="form-phone" className="form-label">
-            Număr Telefon *
+            Număr telefon *
           </label>
           <input
             id="form-phone"

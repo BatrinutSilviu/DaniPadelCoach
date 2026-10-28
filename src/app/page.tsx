@@ -28,7 +28,8 @@ export default async function Home() {
       durationMin: true,
       capacity: true,
       forKids: true,
-      priceTiers: { orderBy: { order: "asc" }, select: { label: true, price: true } },
+      priceTiers: { orderBy: { order: "asc" }, select: { label: true, location: true, price: true } },
+      venues: { where: { isOffered: true }, select: { location: true } },
     },
   });
 

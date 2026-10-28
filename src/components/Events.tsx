@@ -1,8 +1,13 @@
 import { CalendarDays, Clock, MapPin } from "lucide-react";
 import SectionHeading from "@/components/SectionHeading";
 import { InstagramIcon } from "@/components/Footer";
-import { community } from "@/lib/site";
+import { community, contact } from "@/lib/site";
 import { formatDateRo } from "@/lib/date";
+
+const instagramLinks = [
+  { href: community.instagram, label: "Urmărește @activetimisoara pe Instagram" },
+  { href: contact.instagram, label: "Urmărește-l pe Dani: @dneamtiu" },
+];
 
 export type SiteEvent = {
   id: string;
@@ -19,7 +24,7 @@ export default function Events({ events }: { events: SiteEvent[] }) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <SectionHeading
           eyebrow="Evenimente"
-          title="Ne Vedem pe Teren"
+          title="Ne vedem pe teren"
           subtitle="Evenimentele care urmează în comunitatea Act!ve Timișoara."
         />
 
@@ -59,16 +64,19 @@ export default function Events({ events }: { events: SiteEvent[] }) {
           </div>
         )}
 
-        <div className="mt-10 text-center">
-          <a
-            href={community.instagram}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-full border border-brand-gold/40 px-5 py-2.5 text-sm font-semibold text-brand-forest transition-colors hover:border-brand-accent hover:text-brand-accent"
-          >
-            <InstagramIcon />
-            Urmărește @activetimisoara pe Instagram
-          </a>
+        <div className="mt-10 flex flex-wrap items-center justify-center gap-3">
+          {instagramLinks.map(({ href, label }) => (
+            <a
+              key={href}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 rounded-full border border-brand-gold/40 px-5 py-2.5 text-sm font-semibold text-brand-forest transition-colors hover:border-brand-accent hover:text-brand-accent"
+            >
+              <InstagramIcon />
+              {label}
+            </a>
+          ))}
         </div>
       </div>
     </section>
