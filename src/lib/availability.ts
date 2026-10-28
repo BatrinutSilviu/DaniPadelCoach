@@ -8,7 +8,6 @@ import {
   todayDateStr,
 } from "@/lib/date";
 
-export const SLOT_STEP_MIN = 30;
 // How far in advance a slot must start to still be bookable "today".
 export const MIN_NOTICE_MIN = 120;
 export const MAX_DAYS_AHEAD = 30;
@@ -82,7 +81,8 @@ function slotsForDay(params: {
     for (
       let start = timeToMinutes(window.startTime);
       start + service.durationMin <= windowEnd;
-      start += SLOT_STEP_MIN
+      // Back-to-back sessions: an 18:00-20:00 window gives 18:00 and 19:00.
+      start += service.durationMin
     ) {
       if (start < earliestStart) continue;
       const end = start + service.durationMin;
