@@ -219,7 +219,7 @@ export default function Booking({ services }: { services: BookableService[] }) {
 
               {selectedDay && service && (
                 <div>
-                  <p className="form-label capitalize">{formatDateRo(selectedDay.date)}</p>
+                  <p className="form-label first-letter:uppercase">{formatDateRo(selectedDay.date)}</p>
                   <ul className="space-y-2">
                     {selectedDay.slots.map((s) => {
                       const open = time === s.time;
@@ -244,7 +244,7 @@ export default function Booking({ services }: { services: BookableService[] }) {
                           >
                             <span className="min-w-0 flex-1">
                               <span
-                                className={`block font-extrabold ${
+                                className={`block whitespace-nowrap font-extrabold ${
                                   s.available ? "text-white" : "text-white/40 line-through"
                                 }`}
                               >

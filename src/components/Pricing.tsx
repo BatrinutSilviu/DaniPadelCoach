@@ -77,7 +77,7 @@ export default function Pricing({
             return (
               <div
                 key={slug}
-                className={`relative row-span-6 grid grid-rows-subgrid gap-y-0 rounded-2xl p-6 transition-all sm:p-8 ${
+                className={`relative row-span-6 grid grid-rows-subgrid gap-y-0 rounded-2xl p-4 transition-all sm:p-8 ${
                   featured
                     ? "border-2 border-brand-accentBright bg-brand-forest text-white shadow-xl"
                     : "group border border-brand-gold/30 bg-gradient-to-b from-white to-brand-beigeLight shadow-sm hover:shadow-xl"
@@ -121,7 +121,7 @@ export default function Pricing({
                     <tr>
                       <th className="px-2 py-2 font-bold sm:px-4">Antrenament</th>
                       {venues.map((venue) => (
-                        <th key={venue} className="whitespace-nowrap px-2 py-2 text-right font-bold sm:px-4">
+                        <th key={venue} className="px-2 py-2 text-right font-bold sm:whitespace-nowrap sm:px-4">
                           {venue}
                         </th>
                       ))}
@@ -136,7 +136,7 @@ export default function Pricing({
                         {venues.map((venue) => (
                           <td
                             key={venue}
-                            className={`whitespace-nowrap px-2 py-3 text-right text-base font-extrabold sm:px-4 ${
+                            className={`whitespace-nowrap px-2 py-3 text-right text-sm font-extrabold sm:px-4 sm:text-base ${
                               featured ? "text-brand-accentBright" : "text-brand-forest"
                             }`}
                           >

@@ -95,10 +95,10 @@ export default function Hero() {
                 </div>
                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-brand-dark via-brand-forest/90 to-transparent p-4 sm:p-6">
                   <h3 className="text-xl font-bold text-white">Dani</h3>
-                  <div className="flex items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-x-2 gap-y-1.5">
                     <p className="whitespace-nowrap text-xs text-brand-beige sm:text-sm">Fondator Act!ve Academy</p>
-                    <span className="glass-card flex shrink-0 items-center gap-1.5 rounded-full border border-brand-gold/40 px-2.5 py-1 text-xs font-bold text-brand-forest shadow-lg">
-                      <ShieldCheck className="h-4 w-4" />
+                    <span className="glass-card flex shrink-0 items-center gap-1 rounded-full border border-brand-gold/40 px-2 py-1 text-[11px] font-bold text-brand-forest shadow-lg sm:gap-1.5 sm:px-2.5 sm:text-xs">
+                      <ShieldCheck className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       Certificat PadelMBA
                     </span>
                   </div>

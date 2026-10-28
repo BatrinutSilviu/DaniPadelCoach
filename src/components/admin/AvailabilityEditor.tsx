@@ -391,7 +391,7 @@ export default function AvailabilityEditor() {
               className="flex items-center justify-between rounded-xl border border-brand-gold/20 bg-brand-beigeLight/50 px-4 py-2 text-sm"
             >
               <span>
-                <strong className="capitalize text-brand-forest">{formatDateRo(ex.date)}</strong>{" "}
+                <strong className="inline-block text-brand-forest first-letter:uppercase">{formatDateRo(ex.date)}</strong>{" "}
                 ·{" "}
                 {ex.isClosed
                   ? "Închis"

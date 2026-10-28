@@ -154,7 +154,7 @@ export default function BookingsList() {
                 >
                   {STATUS_LABEL[b.status]}
                 </span>
-                <span className="font-bold capitalize text-brand-forest">
+                <span className="inline-block font-bold text-brand-forest first-letter:uppercase">
                   {formatDateRo(b.date)} · {b.startTime} - {b.endTime}
                 </span>
               </div>

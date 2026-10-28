@@ -41,7 +41,7 @@ export default function Events({ events }: { events: SiteEvent[] }) {
               >
                 <p className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand-gold">
                   <CalendarDays className="h-4 w-4 shrink-0 text-brand-accent" />
-                  <span className="capitalize">{formatDateRo(e.date)}</span>
+                  <span className="inline-block first-letter:uppercase">{formatDateRo(e.date)}</span>
                 </p>
                 <h3 className="mt-3 text-2xl font-bold text-brand-forest">{e.title}</h3>
                 <ul className="mt-3 space-y-1 text-sm text-gray-600">

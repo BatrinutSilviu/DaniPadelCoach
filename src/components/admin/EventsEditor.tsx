@@ -170,7 +170,7 @@ export default function EventsEditor() {
             <div>
               <p className="font-bold text-brand-forest">{ev.title}</p>
               <p className="text-gray-500">
-                <span className="capitalize">{formatDateRo(ev.date)}</span>
+                <span className="inline-block first-letter:uppercase">{formatDateRo(ev.date)}</span>
                 {ev.startTime && <> · {ev.startTime}</>} · {ev.location}
                 {ev.date < today && <> · trecut, nu mai apare pe site</>}
               </p>
