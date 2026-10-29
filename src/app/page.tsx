@@ -6,6 +6,7 @@ import Locations from "@/components/Locations";
 import Booking from "@/components/Booking";
 import Footer from "@/components/Footer";
 import Events from "@/components/Events";
+import Sponsors from "@/components/Sponsors";
 import { CourseSelectionProvider } from "@/components/CourseSelection";
 import ComingSoon from "@/components/ComingSoon";
 import { prisma } from "@/lib/prisma";
@@ -39,6 +40,11 @@ export default async function Home() {
     select: { id: true, title: true, date: true, startTime: true, location: true, description: true },
   });
 
+  const sponsors = await prisma.sponsor.findMany({
+    orderBy: { order: "asc" },
+    select: { id: true, name: true, url: true, updatedAt: true },
+  });
+
   return (
     <CourseSelectionProvider>
       <Header />
@@ -49,6 +55,7 @@ export default async function Home() {
         <Booking services={services} />
         <Locations />
         <Events events={events} />
+        <Sponsors sponsors={sponsors} />
       </main>
       <Footer />
     </CourseSelectionProvider>

@@ -151,3 +151,15 @@ model Event {
 
   @@index([date])
 }
+
+// Shown in the sponsors strip before the footer, in `order`. The logo is
+// stored in the database so it lives with the rest of the data.
+model Sponsor {
+  id        String   @id @default(cuid())
+  name      String
+  url       String?
+  logo      Bytes
+  logoType  String // MIME type, e.g. "image/png"
+  order     Int      @default(0)
+  updatedAt DateTime @updatedAt
+}

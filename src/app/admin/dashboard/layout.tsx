@@ -8,6 +8,7 @@ const SECTIONS = [
   ["disponibilitate", "Disponibilitate"],
   ["preturi", "Prețuri"],
   ["evenimente", "Evenimente"],
+  ["sponsori", "Sponsori"],
 ] as const;
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {

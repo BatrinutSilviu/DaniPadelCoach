@@ -3,6 +3,7 @@ import AvailabilityEditor from "@/components/admin/AvailabilityEditor";
 import PricesEditor from "@/components/admin/PricesEditor";
 import SlotLengthsEditor from "@/components/admin/SlotLengthsEditor";
 import EventsEditor from "@/components/admin/EventsEditor";
+import SponsorsEditor from "@/components/admin/SponsorsEditor";
 
 export default function DashboardPage() {
   return (
@@ -35,6 +36,13 @@ export default function DashboardPage() {
         <h2 className="text-2xl font-extrabold text-brand-forest">Evenimente</h2>
         <div className="mt-4">
           <EventsEditor />
+        </div>
+      </section>
+
+      <section id="sponsori" className="scroll-mt-16">
+        <h2 className="text-2xl font-extrabold text-brand-forest">Sponsori</h2>
+        <div className="mt-4">
+          <SponsorsEditor />
         </div>
       </section>
     </div>

@@ -41,14 +41,27 @@ export const bookingCreateSchema = z.object({
   notes: z.string().trim().max(500).optional(),
 });
 
-// A slot the admin occupies by hand. wholeSlot closes a group session
-// to anyone else; otherwise `participants` places are taken.
+// A slot the admin occupies by hand: the visitor's options, but contact
+// details and level are optional so a slot can simply be blocked.
 export const manualBookingSchema = z.object({
   serviceId: z.string().min(1),
   date: dateStr,
   startTime: timeStr,
   participants: z.number().int().min(1).max(20),
-  wholeSlot: z.boolean(),
+  // null = any number of strangers may join, 0 = none.
+  maxStrangers: z.number().int().min(0).max(20).nullable(),
+  level: z
+    .enum(levelChoices, { errorMap: () => ({ message: "Nivel de joc invalid" }) })
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  children: z.array(childSchema).max(20).default([]),
+  clientEmail: z
+    .string()
+    .trim()
+    .email("Email invalid")
+    .max(200)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
   clientName: z.string().trim().max(100).default(""),
   clientPhone: z
     .string()
@@ -131,3 +144,20 @@ export const eventCreateSchema = z.object({
 export function firstIssue(error: z.ZodError): string {
   return error.issues[0]?.message ?? "Date invalide";
 }
+
+// Logo formats accepted for sponsors, and their size limit.
+export const SPONSOR_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
+export const SPONSOR_LOGO_MAX_BYTES = 2 * 1024 * 1024;
+
+export const sponsorSchema = z.object({
+  name: z.string().trim().min(1, "Completează numele sponsorului").max(80),
+  url: z
+    .string()
+    .trim()
+    .url("Link invalid (ex: https://exemplu.ro)")
+    .max(300)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+});
+
+export const sponsorMoveSchema = z.object({ direction: z.enum(["up", "down"]) });
