@@ -4,6 +4,9 @@
 
 html {
   scroll-behavior: smooth;
+  /* The site is designed light only; this stops phone browsers from
+     auto-darkening it, which made text clash with the background. */
+  color-scheme: only light;
 }
 
 /* Keep anchored sections clear of the sticky header (h-16, sm:h-20). */
@@ -20,8 +23,6 @@ section[id] {
 @layer components {
   .pattern-bg {
     background-color: #f4efe6;
-    background-image: radial-gradient(#d9cdb0 1px, transparent 1px);
-    background-size: 24px 24px;
   }
 
   .glass-card {

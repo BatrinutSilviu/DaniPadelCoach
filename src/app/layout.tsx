@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -12,6 +12,11 @@ export const metadata: Metadata = {
   title: "Dani - antrenor padel Timișoara | Act!ve Padel Academy",
   description:
     "Antrenamente de padel pentru adulți și copii în Timișoara cu Dani, antrenor certificat PadelMBA. Active Arena & X3 Padel.",
+};
+
+// Light only, so phone browsers in dark mode don't auto-darken the page.
+export const viewport: Viewport = {
+  colorScheme: "only light",
 };
 
 export default function RootLayout({
