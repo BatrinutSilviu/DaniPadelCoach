@@ -1,6 +1,19 @@
 import SectionHeading from "@/components/SectionHeading";
 
-export type SiteSponsor = { id: string; name: string; url: string | null; updatedAt: Date };
+export type SiteSponsor = {
+  id: string;
+  name: string;
+  url: string | null;
+  logoBg: string;
+  updatedAt: Date;
+};
+
+// Tile behind a logo, so light logos sit on dark and dark ones on light.
+export function sponsorTileClass(logoBg: string): string {
+  return logoBg === "dark"
+    ? "border-brand-forest bg-brand-forest"
+    : "border-brand-gold/30 bg-white";
+}
 
 export function sponsorLogoUrl(s: { id: string; updatedAt: Date | string }): string {
   return `/api/sponsors/${s.id}/logo?v=${new Date(s.updatedAt).getTime()}`;
@@ -30,8 +43,7 @@ export default function Sponsors({ sponsors }: { sponsors: SiteSponsor[] }) {
                 className="max-h-16 max-w-full object-contain sm:max-h-20"
               />
             );
-            const box =
-              "flex h-24 w-[calc(50%-0.5rem)] items-center justify-center rounded-2xl border border-brand-gold/30 bg-white p-4 shadow-sm transition-all sm:h-28 sm:w-48";
+            const box = `flex h-24 w-[calc(50%-0.5rem)] items-center justify-center rounded-2xl border p-4 shadow-sm transition-all sm:h-28 sm:w-48 ${sponsorTileClass(s.logoBg)}`;
             return (
               <li key={s.id} className={box}>
                 {s.url ? (

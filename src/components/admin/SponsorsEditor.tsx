@@ -2,12 +2,46 @@
 
 import { useEffect, useRef, useState } from "react";
 import { ArrowDown, ArrowUp, ExternalLink, Plus, Trash2 } from "lucide-react";
-import { sponsorLogoUrl } from "@/components/Sponsors";
+import { sponsorLogoUrl, sponsorTileClass } from "@/components/Sponsors";
+
+type LogoBg = "light" | "dark";
+
+const BG_LABELS: Record<LogoBg, string> = { light: "Fundal deschis", dark: "Fundal închis" };
+
+// Suggests a tile for a logo: dark when it is mostly light-colored on a
+// transparent background (e.g. a white logo), light otherwise.
+async function suggestBg(src: string): Promise<LogoBg> {
+  const img = new Image();
+  img.src = src;
+  await img.decode();
+  const size = 64;
+  const canvas = document.createElement("canvas");
+  canvas.width = canvas.height = size;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return "light";
+  ctx.drawImage(img, 0, 0, size, size);
+  const { data } = ctx.getImageData(0, 0, size, size);
+  let visible = 0;
+  let transparent = 0;
+  let luminance = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] < 32) {
+      transparent++;
+      continue;
+    }
+    visible++;
+    luminance += (0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2]) / 255;
+  }
+  // A logo without transparency brings its own background.
+  if (visible === 0 || transparent < size * size * 0.1) return "light";
+  return luminance / visible > 0.6 ? "dark" : "light";
+}
 
 interface Sponsor {
   id: string;
   name: string;
   url: string | null;
+  logoBg: LogoBg;
   updatedAt: string;
 }
 
@@ -19,6 +53,24 @@ export default function SponsorsEditor() {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
+  // The chosen file, previewed on the tile it will get on the site.
+  const [preview, setPreview] = useState<string | null>(null);
+  const [logoBg, setLogoBg] = useState<LogoBg>("light");
+
+  useEffect(() => () => {
+    if (preview) URL.revokeObjectURL(preview);
+  }, [preview]);
+
+  async function pickFile(file: File | undefined) {
+    const url = file ? URL.createObjectURL(file) : null;
+    setPreview(url);
+    if (!url) return;
+    try {
+      setLogoBg(await suggestBg(url));
+    } catch {
+      setLogoBg("light");
+    }
+  }
 
   async function load() {
     try {
@@ -52,6 +104,7 @@ export default function SponsorsEditor() {
       form.set("name", name);
       form.set("url", url);
       form.set("logo", file);
+      form.set("logoBg", logoBg);
       const res = await fetch("/api/admin/sponsors", { method: "POST", body: form });
       if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -61,6 +114,8 @@ export default function SponsorsEditor() {
       setName("");
       setUrl("");
       if (fileRef.current) fileRef.current.value = "";
+      setPreview(null);
+      setLogoBg("light");
       await load();
     } catch {
       setError("Eroare de rețea la salvare");
@@ -93,6 +148,13 @@ export default function SponsorsEditor() {
       body: JSON.stringify({ direction }),
     });
 
+  const switchBg = (s: Sponsor) =>
+    act(s, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ logoBg: s.logoBg === "dark" ? "light" : "dark" }),
+    });
+
   function remove(s: Sponsor) {
     if (confirm(`Ștergi sponsorul ${s.name}?`)) act(s, { method: "DELETE" });
   }
@@ -103,7 +165,8 @@ export default function SponsorsEditor() {
         <h3 className="font-bold text-brand-forest">Sponsori</h3>
         <p className="text-sm text-gray-500">
           Logo-urile apar pe site în secțiunea „Partenerii noștri”, înainte de subsol, în ordinea de
-          mai jos. Secțiunea e ascunsă cât timp nu există sponsori.
+          mai jos. Secțiunea e ascunsă cât timp nu există sponsori. Apasă pe un logo din listă ca
+          să-i schimbi fundalul (deschis / închis).
         </p>
       </div>
 
@@ -140,9 +203,35 @@ export default function SponsorsEditor() {
             type="file"
             required
             accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            onChange={(e) => pickFile(e.target.files?.[0])}
             className="block w-full text-sm text-gray-700 file:mr-3 file:rounded-lg file:border-0 file:bg-brand-forest file:px-4 file:py-2.5 file:text-sm file:font-bold file:text-white"
           />
         </div>
+        {preview && (
+          <div className="flex flex-wrap items-center gap-4 sm:col-span-2">
+            <div
+              className={`flex h-24 w-40 items-center justify-center rounded-2xl border p-4 ${sponsorTileClass(logoBg)}`}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={preview} alt="Previzualizare logo" className="max-h-16 max-w-full object-contain" />
+            </div>
+            <div className="space-y-2">
+              <p className="admin-label mb-0">Cum apare pe site</p>
+              {(["light", "dark"] as const).map((bg) => (
+                <label key={bg} className="flex items-center gap-2 text-sm text-gray-700">
+                  <input
+                    type="radio"
+                    name="sponsor-bg"
+                    checked={logoBg === bg}
+                    onChange={() => setLogoBg(bg)}
+                    className="accent-brand-forest"
+                  />
+                  {BG_LABELS[bg]}
+                </label>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="sm:col-span-2">
           <button type="submit" className="admin-btn-primary" disabled={saving}>
             <Plus className="h-4 w-4" />
@@ -161,10 +250,17 @@ export default function SponsorsEditor() {
             key={s.id}
             className="flex items-center gap-3 rounded-xl border border-brand-gold/20 bg-brand-beigeLight/50 p-3"
           >
-            <div className="flex h-12 w-20 shrink-0 items-center justify-center rounded-lg bg-white p-1">
+            <button
+              type="button"
+              title={`${BG_LABELS[s.logoBg]} – apasă pentru a schimba`}
+              aria-label={`Schimbă fundalul logo-ului (acum: ${BG_LABELS[s.logoBg].toLowerCase()})`}
+              disabled={busyId !== null}
+              onClick={() => switchBg(s)}
+              className={`flex h-12 w-20 shrink-0 items-center justify-center rounded-lg border p-1 ${sponsorTileClass(s.logoBg)}`}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={sponsorLogoUrl(s)} alt="" className="max-h-full max-w-full object-contain" />
-            </div>
+            </button>
             <div className="min-w-0 flex-1">
               <p className="truncate font-bold text-brand-forest">{s.name}</p>
               {s.url && (

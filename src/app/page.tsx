@@ -42,7 +42,7 @@ export default async function Home() {
 
   const sponsors = await prisma.sponsor.findMany({
     orderBy: { order: "asc" },
-    select: { id: true, name: true, url: true, updatedAt: true },
+    select: { id: true, name: true, url: true, logoBg: true, updatedAt: true },
   });
 
   return (

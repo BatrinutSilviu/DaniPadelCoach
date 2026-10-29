@@ -160,6 +160,8 @@ model Sponsor {
   url       String?
   logo      Bytes
   logoType  String // MIME type, e.g. "image/png"
+  // Tile behind the logo: "light" or "dark", so the logo stays readable.
+  logoBg    String   @default("light")
   order     Int      @default(0)
   updatedAt DateTime @updatedAt
 }

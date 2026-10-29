@@ -149,7 +149,11 @@ export function firstIssue(error: z.ZodError): string {
 export const SPONSOR_LOGO_TYPES = ["image/png", "image/jpeg", "image/webp", "image/svg+xml"];
 export const SPONSOR_LOGO_MAX_BYTES = 2 * 1024 * 1024;
 
+export const SPONSOR_LOGO_BGS = ["light", "dark"] as const;
+export type SponsorLogoBg = (typeof SPONSOR_LOGO_BGS)[number];
+
 export const sponsorSchema = z.object({
+  logoBg: z.enum(SPONSOR_LOGO_BGS).default("light"),
   name: z.string().trim().min(1, "Completează numele sponsorului").max(80),
   url: z
     .string()
@@ -160,7 +164,11 @@ export const sponsorSchema = z.object({
     .or(z.literal("").transform(() => undefined)),
 });
 
-export const sponsorMoveSchema = z.object({ direction: z.enum(["up", "down"]) });
+// PATCH: move one place, or change the tile behind the logo.
+export const sponsorPatchSchema = z.union([
+  z.object({ direction: z.enum(["up", "down"]) }),
+  z.object({ logoBg: z.enum(SPONSOR_LOGO_BGS) }),
+]);
 
 export const recurringBlockSchema = z
   .object({

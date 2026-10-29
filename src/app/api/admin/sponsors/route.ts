@@ -14,7 +14,7 @@ export async function GET() {
   }
   const sponsors = await prisma.sponsor.findMany({
     orderBy: { order: "asc" },
-    select: { id: true, name: true, url: true, updatedAt: true },
+    select: { id: true, name: true, url: true, logoBg: true, updatedAt: true },
   });
   return NextResponse.json({ sponsors });
 }
@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
   const parsed = sponsorSchema.safeParse({
     name: form.get("name") ?? "",
     url: form.get("url") ?? "",
+    logoBg: form.get("logoBg") ?? "light",
   });
   if (!parsed.success) {
     return NextResponse.json({ error: firstIssue(parsed.error) }, { status: 400 });
@@ -56,7 +57,7 @@ export async function POST(req: NextRequest) {
       logoType: logo.type,
       order: (last?.order ?? -1) + 1,
     },
-    select: { id: true, name: true, url: true, updatedAt: true },
+    select: { id: true, name: true, url: true, logoBg: true, updatedAt: true },
   });
   return NextResponse.json({ sponsor }, { status: 201 });
 }

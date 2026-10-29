@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdminRequest } from "@/lib/adminGuard";
-import { firstIssue, sponsorMoveSchema } from "@/lib/validation";
+import { firstIssue, sponsorPatchSchema } from "@/lib/validation";
 
-// Moves a sponsor one place up or down in the strip.
+// Moves a sponsor one place up or down in the strip, or changes the tile
+// behind its logo.
 export async function PATCH(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> },
@@ -11,12 +12,21 @@ export async function PATCH(
   if (!(await isAdminRequest())) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const parsed = sponsorMoveSchema.safeParse(await req.json().catch(() => null));
+  const parsed = sponsorPatchSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) {
     return NextResponse.json({ error: firstIssue(parsed.error) }, { status: 400 });
   }
 
   const { id } = await params;
+  if ("logoBg" in parsed.data) {
+    const updated = await prisma.sponsor
+      .update({ where: { id }, data: { logoBg: parsed.data.logoBg } })
+      .catch(() => null);
+    if (!updated) {
+      return NextResponse.json({ error: "Sponsorul nu există" }, { status: 404 });
+    }
+    return NextResponse.json({ ok: true });
+  }
   const sponsors = await prisma.sponsor.findMany({ orderBy: { order: "asc" }, select: { id: true } });
   const from = sponsors.findIndex((s) => s.id === id);
   if (from === -1) {
