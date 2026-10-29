@@ -9,6 +9,8 @@ import {
   MapPin,
   MessageSquare,
   PhoneCall,
+  UserPlus,
+  Users,
 } from "lucide-react";
 import { useCourseSelection } from "@/components/CourseSelection";
 import {
@@ -38,6 +40,8 @@ type Confirmation = {
   startTime: string;
   endTime: string;
   location: string;
+  // The address the confirmation emails go to, if one was given.
+  email: string | null;
 };
 
 function shortDate(dateStr: string) {
@@ -57,10 +61,10 @@ function slotStatus(s: Slot): string {
 
 // Who an adult comes with. friends/strangers = null when not ticked;
 // strangers "any" = no limit.
-type Company = { friends: number | null; strangers: number | "any" | null };
+export type Company = { friends: number | null; strangers: number | "any" | null };
 
 // What the API needs from a Company.
-function companyBooking(c: Company): { participants: number; maxStrangers: number | null } {
+export function companyBooking(c: Company): { participants: number; maxStrangers: number | null } {
   return {
     participants: 1 + (c.friends ?? 0),
     maxStrangers: c.strangers === null ? 0 : c.strangers === "any" ? null : c.strangers,
@@ -175,6 +179,13 @@ export default function Booking({ services }: { services: BookableService[] }) {
                 {confirmed.location}
               </p>
               <p className="text-sm text-gray-300">Dani te va contacta în curând pentru confirmare.</p>
+              {confirmed.email && (
+                <p className="text-sm text-gray-300">
+                  Ți-am trimis detaliile pe <strong className="text-brand-beige">{confirmed.email}</strong>.
+                  Vei primi un email și când programarea e confirmată, plus un memento în ziua
+                  antrenamentului, la ora 10:00.
+                </p>
+              )}
               <button
                 type="button"
                 onClick={() => {
@@ -470,6 +481,7 @@ function SlotBookingForm({
         startTime: body.booking.startTime,
         endTime: body.booking.endTime,
         location: body.booking.location,
+        email: body.booking.clientEmail ?? null,
       });
     } catch {
       setSubmitError("Eroare de rețea. Încearcă din nou.");
@@ -605,8 +617,13 @@ function SlotBookingForm({
           type="email"
           autoComplete="email"
           placeholder="Ex: andrei@email.com"
+          aria-describedby="form-email-hint"
           className="form-field"
         />
+        <p id="form-email-hint" className="mt-1 text-xs text-brand-beige">
+          Dacă îl completezi, primești pe email confirmarea programării și un memento în ziua
+          antrenamentului.
+        </p>
       </div>
 
       <div>
@@ -642,7 +659,7 @@ function SlotBookingForm({
 
 // "Vin cu prieteni" / "Accept jucători străini", for the adult course.
 // A session holds 4 players, so friends + strangers can't exceed 3.
-function CompanyPicker({
+export function CompanyPicker({
   company,
   onChange,
 }: {
@@ -660,88 +677,191 @@ function CompanyPicker({
     onChange({ friends: next, strangers: s });
   }
 
+  // The 4 places on court, as the choices fill them.
+  const strangerSeats = strangers === null ? 0 : strangers === "any" ? roomForStrangers : strangers;
+  const seats: Seat[] = [
+    "you",
+    ...Array<Seat>(friends ?? 0).fill("friend"),
+    ...Array<Seat>(strangerSeats).fill("stranger"),
+  ];
+  while (seats.length < 4) seats.push("closed");
+
   return (
-    <div className="space-y-3 rounded-xl border border-brand-gold/30 bg-white/5 p-4">
-      <p className="form-label mb-0">Cu cine joci?</p>
-
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <label className="flex items-center gap-2 text-sm text-gray-200">
-          <input
-            type="checkbox"
-            checked={friends !== null}
-            onChange={(e) => setFriends(e.target.checked ? 1 : null)}
-            className="h-5 w-5 shrink-0 accent-brand-accentBright"
-          />
-          Vin cu prieteni
-        </label>
-        {friends !== null && (
-          <select
-            aria-label="Câți prieteni"
-            value={friends}
-            onChange={(e) => setFriends(Number(e.target.value))}
-            className="form-select w-auto py-1.5"
-          >
-            {[1, 2, 3].map((n) => (
-              <option key={n} value={n}>
-                {n === 1 ? "1 prieten" : `${n} prieteni`}
-              </option>
-            ))}
-          </select>
-        )}
+    <div className="space-y-3 rounded-2xl border border-brand-gold/30 bg-white/5 p-3 sm:p-4">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-sm font-bold text-white">Cu cine joci?</p>
+        <div className="flex gap-1.5" aria-hidden>
+          {seats.map((seat, i) => (
+            <SeatDot key={i} seat={seat} />
+          ))}
+        </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <label
-          className={`flex items-center gap-2 text-sm ${
-            roomForStrangers === 0 ? "text-gray-500" : "text-gray-200"
-          }`}
-        >
-          <input
-            type="checkbox"
-            checked={strangers !== null}
-            disabled={roomForStrangers === 0}
-            onChange={(e) => onChange({ friends, strangers: e.target.checked ? "any" : null })}
-            className="h-5 w-5 shrink-0 accent-brand-accentBright"
-          />
-          Accept jucători străini în sesiune
-        </label>
-        {strangers !== null && (
-          <select
-            aria-label="Câți jucători străini"
-            value={strangers}
-            onChange={(e) =>
-              onChange({
-                friends,
-                strangers: e.target.value === "any" ? "any" : Number(e.target.value),
-              })
-            }
-            className="form-select w-auto py-1.5"
-          >
-            {Array.from({ length: roomForStrangers }, (_, i) => i + 1).map((n) => (
-              <option key={n} value={n}>
-                {n === 1 ? "1 jucător" : `${n} jucători`}
-              </option>
-            ))}
-            <option value="any">Oricâți</option>
-          </select>
-        )}
-      </div>
+      <ChoiceCard
+        icon={<Users className="h-5 w-5" />}
+        title="Vin cu prieteni"
+        subtitle="Rezervi locuri și pentru ei"
+        on={friends !== null}
+        onToggle={() => setFriends(friends === null ? 1 : null)}
+      >
+        <PillGroup
+          label="Câți prieteni?"
+          options={[1, 2, 3].map((n) => ({ value: n, label: String(n) }))}
+          value={friends}
+          onSelect={(v) => setFriends(v as number)}
+        />
+      </ChoiceCard>
 
-      <p className="text-xs text-brand-beige">
+      <ChoiceCard
+        icon={<UserPlus className="h-5 w-5" />}
+        title="Accept jucători străini"
+        subtitle={
+          roomForStrangers === 0 ? "Terenul e complet cu prietenii tăi" : "Alți jucători se pot alătura sesiunii"
+        }
+        on={strangers !== null}
+        disabled={roomForStrangers === 0}
+        onToggle={() => onChange({ friends, strangers: strangers === null ? "any" : null })}
+      >
+        <PillGroup
+          label="Câți?"
+          options={[
+            ...Array.from({ length: roomForStrangers }, (_, i) => ({ value: i + 1, label: String(i + 1) })),
+            { value: "any" as const, label: "Oricâți" },
+          ]}
+          value={strangers}
+          onSelect={(v) => onChange({ friends, strangers: v as number | "any" })}
+        />
+      </ChoiceCard>
+
+      <p className="text-xs leading-relaxed text-brand-beige">
         {players === 1 ? "Vii doar tu" : `Veniți ${players} jucători`}
         {roomForStrangers === 0
           ? ", terenul e complet."
           : strangers === null
             ? `, iar sesiunea rămâne doar pentru ${players === 1 ? "tine" : "voi"}.`
-            : strangers === "any"
-              ? ` și se pot alătura până la ${roomForStrangers} ${
-                  roomForStrangers === 1 ? "jucător străin" : "jucători străini"
-                }.`
-              : ` și se pot alătura până la ${strangers} ${
-                  strangers === 1 ? "jucător străin" : "jucători străini"
-                }.`}{" "}
+            : ` și se pot alătura până la ${strangerSeats} ${
+                strangerSeats === 1 ? "jucător străin" : "jucători străini"
+              }.`}{" "}
         Maxim 4 jucători pe sesiune.
       </p>
+    </div>
+  );
+}
+
+type Seat = "you" | "friend" | "stranger" | "closed";
+
+const SEAT_STYLE: Record<Seat, string> = {
+  you: "border-brand-accentBright bg-brand-accentBright text-brand-dark",
+  friend: "border-brand-beige bg-brand-beige text-brand-dark",
+  stranger: "border-dashed border-brand-accentBright text-brand-accentBright",
+  closed: "border-white/15 text-white/25",
+};
+
+const SEAT_TEXT: Record<Seat, string> = { you: "Tu", friend: "P", stranger: "?", closed: "–" };
+
+function SeatDot({ seat }: { seat: Seat }) {
+  return (
+    <span
+      className={`flex h-7 w-7 items-center justify-center rounded-full border-2 text-[10px] font-extrabold transition-all ${SEAT_STYLE[seat]}`}
+    >
+      {SEAT_TEXT[seat]}
+    </span>
+  );
+}
+
+// A tappable option with an on/off switch; its extra choices show when on.
+function ChoiceCard({
+  icon,
+  title,
+  subtitle,
+  on,
+  disabled = false,
+  onToggle,
+  children,
+}: {
+  icon: React.ReactNode;
+  title: string;
+  subtitle: string;
+  on: boolean;
+  disabled?: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <div
+      className={`rounded-xl border transition-all ${
+        on ? "border-brand-accentBright/60 bg-brand-accentBright/10" : "border-white/10 bg-white/5"
+      } ${disabled ? "opacity-50" : ""}`}
+    >
+      <button
+        type="button"
+        role="switch"
+        aria-checked={on}
+        disabled={disabled}
+        onClick={onToggle}
+        className="flex w-full items-center gap-3 p-3 text-left disabled:cursor-not-allowed"
+      >
+        <span
+          className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl transition-colors ${
+            on ? "bg-brand-accentBright text-brand-dark" : "bg-white/10 text-brand-beige"
+          }`}
+        >
+          {icon}
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-sm font-bold text-white">{title}</span>
+          <span className="block text-xs text-gray-300">{subtitle}</span>
+        </span>
+        <span
+          className={`relative h-6 w-11 shrink-0 rounded-full transition-colors ${
+            on ? "bg-brand-accentBright" : "bg-white/20"
+          }`}
+        >
+          <span
+            className={`absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all ${
+              on ? "left-[1.375rem]" : "left-0.5"
+            }`}
+          />
+        </span>
+      </button>
+      {on && <div className="px-3 pb-3">{children}</div>}
+    </div>
+  );
+}
+
+function PillGroup<T extends number | string>({
+  label,
+  options,
+  value,
+  onSelect,
+}: {
+  label: string;
+  options: { value: T; label: string }[];
+  value: T | null;
+  onSelect: (v: T) => void;
+}) {
+  return (
+    <div role="radiogroup" aria-label={label} className="flex flex-wrap items-center gap-2">
+      <span className="mr-1 text-xs font-semibold text-brand-beige">{label}</span>
+      {options.map((o) => {
+        const selected = o.value === value;
+        return (
+          <button
+            key={String(o.value)}
+            type="button"
+            role="radio"
+            aria-checked={selected}
+            onClick={() => onSelect(o.value)}
+            className={`h-10 min-w-10 rounded-full border px-3 text-sm font-bold transition-all ${
+              selected
+                ? "border-brand-accentBright bg-brand-accentBright text-brand-dark shadow-lg shadow-emerald-900/40"
+                : "border-brand-gold/30 bg-white/5 text-white hover:border-brand-beige"
+            }`}
+          >
+            {o.label}
+          </button>
+        );
+      })}
     </div>
   );
 }
