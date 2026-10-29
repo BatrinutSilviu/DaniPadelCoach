@@ -161,3 +161,20 @@ export const sponsorSchema = z.object({
 });
 
 export const sponsorMoveSchema = z.object({ direction: z.enum(["up", "down"]) });
+
+export const recurringBlockSchema = z
+  .object({
+    dayOfWeek: z.number().int().min(0).max(6),
+    startTime: timeStr,
+    label: z.string().trim().max(100).default(""),
+    startDate: dateStr,
+    endDate: dateStr
+      .optional()
+      .nullable()
+      .or(z.literal("").transform(() => null))
+      .transform((v) => v ?? null),
+  })
+  .refine((v) => !v.endDate || v.endDate >= v.startDate, {
+    message: "Data de final trebuie să fie după cea de început",
+    path: ["endDate"],
+  });

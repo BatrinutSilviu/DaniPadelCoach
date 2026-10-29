@@ -2,6 +2,7 @@ import BookingsList from "@/components/admin/BookingsList";
 import AvailabilityEditor from "@/components/admin/AvailabilityEditor";
 import PricesEditor from "@/components/admin/PricesEditor";
 import SlotLengthsEditor from "@/components/admin/SlotLengthsEditor";
+import RecurringBlocksEditor from "@/components/admin/RecurringBlocksEditor";
 import EventsEditor from "@/components/admin/EventsEditor";
 import SponsorsEditor from "@/components/admin/SponsorsEditor";
 
@@ -22,6 +23,9 @@ export default function DashboardPage() {
         </div>
         <div className="mt-6">
           <SlotLengthsEditor />
+        </div>
+        <div className="mt-6">
+          <RecurringBlocksEditor />
         </div>
       </section>
 

@@ -163,3 +163,16 @@ model Sponsor {
   order     Int      @default(0)
   updatedAt DateTime @updatedAt
 }
+
+// A slot the admin keeps occupied every week (e.g. a regular client), from
+// startDate until endDate (inclusive; null = no end). It blocks the slot
+// starting at startTime for every course, so visitors see it as taken.
+model RecurringBlock {
+  id        String   @id @default(cuid())
+  dayOfWeek Int // 0 = Sunday ... 6 = Saturday
+  startTime String // "HH:mm"
+  label     String   @default("")
+  startDate String // "YYYY-MM-DD"
+  endDate   String?
+  createdAt DateTime @default(now())
+}

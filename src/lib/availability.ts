@@ -7,6 +7,7 @@ import {
   timeToMinutes,
   todayDateStr,
 } from "@/lib/date";
+import { DEFAULT_SESSION_MIN } from "@/lib/site";
 
 // How far in advance a slot must start to still be bookable "today".
 export const MIN_NOTICE_MIN = 120;
@@ -161,7 +162,7 @@ export async function getAvailableSlots(
   const start = fromDate < today ? today : fromDate;
   const end = addDays(start, days);
 
-  const [rules, exceptions, bookings, closedVenues, slotLengths] = await Promise.all([
+  const [rules, exceptions, bookings, closedVenues, slotLengths, blocks] = await Promise.all([
     db.availabilityRule.findMany({
       where: { OR: [{ serviceId: service.id }, { serviceId: null }] },
     }),
@@ -187,6 +188,9 @@ export async function getAvailableSlots(
       select: { location: true },
     }),
     db.slotLength.findMany({ where: { date: { gte: start, lt: end } } }),
+    db.recurringBlock.findMany({
+      where: { startDate: { lt: end }, OR: [{ endDate: null }, { endDate: { gte: start } }] },
+    }),
   ]);
   const offeredAt = (location: string) => !closedVenues.some((v) => v.location === location);
 
@@ -216,13 +220,36 @@ export async function getAvailableSlots(
     windows = windows.filter((w) => offeredAt(w.location));
     if (windows.length === 0) continue;
 
+    const lengths = new Map(
+      slotLengths.filter((l) => l.date === date).map((l) => [l.startTime, l.durationMin]),
+    );
+    // Weekly blocks act like a booking nobody can join, as long as the slot.
+    const blockedOn = (d: string): BookedRange[] =>
+      blocks
+        .filter(
+          (b) =>
+            b.dayOfWeek === dateStrToDate(d).getDay() &&
+            b.startDate <= d &&
+            (b.endDate === null || b.endDate >= d),
+        )
+        .map((b) => ({
+          serviceId: "",
+          startTime: b.startTime,
+          endTime: minutesToTime(
+            timeToMinutes(b.startTime) + (lengths.get(b.startTime) ?? DEFAULT_SESSION_MIN),
+          ),
+          participants: 0,
+          openToOthers: false,
+          maxStrangers: 0,
+          forKids: false,
+          level: null,
+        }));
+
     const slots = slotsForDay({
       service,
       windows,
-      booked: bookings.filter((b) => b.date === date),
-      lengths: new Map(
-        slotLengths.filter((l) => l.date === date).map((l) => [l.startTime, l.durationMin]),
-      ),
+      booked: [...bookings.filter((b) => b.date === date), ...blockedOn(date)],
+      lengths,
       earliestStart: date === today ? nowMinutesOfDay() + minNoticeMin : -Infinity,
     });
     if (slots.length > 0) result.push({ date, slots });
