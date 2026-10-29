@@ -41,13 +41,16 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
   }
-  // Only meaningful for group courses; private lessons are exclusive anyway.
-  const openToOthers = !isGroup || client.openToOthers;
+  // Kids say yes/no to others joining; adults say how many strangers they
+  // accept. Private lessons are exclusive anyway.
+  const { openToOthers: kidsOpen, maxStrangers: adultMax, ...contact } = client;
+  const maxStrangers = !isGroup ? null : forKids ? (kidsOpen ? null : 0) : adultMax;
+  const openToOthers = maxStrangers !== 0;
 
   try {
     const booking = await prisma.$transaction(async (tx) => {
       const slot = await getSlot(tx, service, date, startTime);
-      if (!slot || !canBook(slot, service.capacity, participants, openToOthers, forKids)) {
+      if (!slot || !canBook(slot, participants, maxStrangers, forKids)) {
         throw new Error("SLOT_UNAVAILABLE");
       }
       return tx.booking.create({
@@ -55,11 +58,12 @@ export async function POST(req: NextRequest) {
           serviceId,
           date,
           startTime,
-          endTime: minutesToTime(timeToMinutes(startTime) + service.durationMin),
+          endTime: minutesToTime(timeToMinutes(startTime) + slot.durationMin),
           location: slot.location,
-          ...client,
+          ...contact,
           participants,
           openToOthers,
+          maxStrangers,
           forKids,
           children: forKids ? { create: children } : undefined,
         },

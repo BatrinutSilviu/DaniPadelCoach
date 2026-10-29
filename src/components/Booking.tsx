@@ -11,7 +11,13 @@ import {
   PhoneCall,
 } from "lucide-react";
 import { useCourseSelection } from "@/components/CourseSelection";
-import { contact, levelChoices, MAX_PRIVATE_PARTICIPANTS, type CourseSlug } from "@/lib/site";
+import {
+  contact,
+  DEFAULT_SESSION_MIN,
+  levelChoices,
+  MAX_PRIVATE_PARTICIPANTS,
+  type CourseSlug,
+} from "@/lib/site";
 import { canBook, type Slot } from "@/lib/availability";
 import { formatDateRo, minutesToTime, timeToMinutes } from "@/lib/date";
 
@@ -39,10 +45,26 @@ function shortDate(dateStr: string) {
   return { weekdayLong: weekday, weekday: weekday.slice(0, 3), day, month: month.slice(0, 3) };
 }
 
+function placesText(n: number): string {
+  return n === 1 ? "1 loc liber" : `${n} locuri libere`;
+}
+
 function slotStatus(s: Slot): string {
   if (!s.available) return "Ocupat";
   if (s.placesLeft === null) return "Disponibil";
-  return s.placesLeft === 1 ? "1 loc liber" : `${s.placesLeft} locuri libere`;
+  return placesText(s.placesLeft);
+}
+
+// Who an adult comes with. friends/strangers = null when not ticked;
+// strangers "any" = no limit.
+type Company = { friends: number | null; strangers: number | "any" | null };
+
+// What the API needs from a Company.
+function companyBooking(c: Company): { participants: number; maxStrangers: number | null } {
+  return {
+    participants: 1 + (c.friends ?? 0),
+    maxStrangers: c.strangers === null ? 0 : c.strangers === "any" ? null : c.strangers,
+  };
 }
 
 // The schedule and the booking form in one: every upcoming slot of the
@@ -58,6 +80,27 @@ export default function Booking({ services }: { services: BookableService[] }) {
   const [time, setTime] = useState<string | null>(null);
   const [reloadKey, setReloadKey] = useState(0);
   const [confirmed, setConfirmed] = useState<Confirmation | null>(null);
+  // Adults' company preferences; slots only show free places once set.
+  const [company, setCompany] = useState<Company>({ friends: null, strangers: null });
+  const [companySet, setCompanySet] = useState(false);
+  const usesCompany = !!service && !service.forKids && service.capacity > 1;
+  const { participants, maxStrangers } = companyBooking(company);
+
+  function changeCompany(next: Company) {
+    setCompany(next);
+    setCompanySet(true);
+  }
+
+  // Label and whether the slot can be opened, for this visitor.
+  function slotView(s: Slot): { label: string; bookable: boolean } {
+    if (!usesCompany || !s.available) return { label: slotStatus(s), bookable: s.available };
+    if (!companySet) return { label: "Interval disponibil", bookable: true };
+    if (!canBook(s, participants, maxStrangers, false)) return { label: "Indisponibil", bookable: false };
+    return {
+      label: s.taken > 0 && s.placesLeft !== null ? placesText(s.placesLeft) : "Interval disponibil",
+      bookable: true,
+    };
+  }
 
   useEffect(() => {
     if (!service) return;
@@ -162,9 +205,6 @@ export default function Booking({ services }: { services: BookableService[] }) {
                       }`}
                     >
                       {s.name}
-                      <span className="block text-xs font-medium opacity-80">
-                        {s.durationMin} min / ședință
-                      </span>
                     </button>
                   );
                 })}
@@ -217,27 +257,32 @@ export default function Booking({ services }: { services: BookableService[] }) {
                 )}
               </div>
 
+              {usesCompany && days && days.length > 0 && (
+                <CompanyPicker company={company} onChange={changeCompany} />
+              )}
+
               {selectedDay && service && (
                 <div>
                   <p className="form-label first-letter:uppercase">{formatDateRo(selectedDay.date)}</p>
                   <ul className="space-y-2">
                     {selectedDay.slots.map((s) => {
-                      const open = time === s.time;
-                      const end = minutesToTime(timeToMinutes(s.time) + service.durationMin);
+                      const { label, bookable } = slotView(s);
+                      const open = time === s.time && bookable;
+                      const end = minutesToTime(timeToMinutes(s.time) + s.durationMin);
                       return (
                         <li
                           key={s.time}
                           className={`overflow-hidden rounded-xl border transition-all ${
                             open
                               ? "border-brand-accentBright bg-white/10"
-                              : s.available
+                              : bookable
                                 ? "border-brand-gold/30 bg-white/5"
                                 : "border-white/10 bg-white/5"
                           }`}
                         >
                           <button
                             type="button"
-                            disabled={!s.available}
+                            disabled={!bookable}
                             aria-expanded={open}
                             onClick={() => setTime(open ? null : s.time)}
                             className="flex w-full items-center gap-3 px-4 py-3 text-left disabled:cursor-not-allowed"
@@ -245,14 +290,19 @@ export default function Booking({ services }: { services: BookableService[] }) {
                             <span className="min-w-0 flex-1">
                               <span
                                 className={`block whitespace-nowrap font-extrabold ${
-                                  s.available ? "text-white" : "text-white/40 line-through"
+                                  bookable ? "text-white" : "text-white/40 line-through"
                                 }`}
                               >
                                 {s.time} - {end}
+                                {s.durationMin !== DEFAULT_SESSION_MIN && (
+                                  <span className="ml-2 rounded-full bg-brand-gold/30 px-1.5 align-middle text-[10px] font-semibold text-white no-underline">
+                                    {s.durationMin} min
+                                  </span>
+                                )}
                               </span>
                               <span
                                 className={`mt-0.5 flex items-center gap-1 text-sm ${
-                                  s.available ? "text-gray-300" : "text-white/40"
+                                  bookable ? "text-gray-300" : "text-white/40"
                                 }`}
                               >
                                 <MapPin className="h-3.5 w-3.5 shrink-0" />
@@ -267,14 +317,14 @@ export default function Booking({ services }: { services: BookableService[] }) {
                             </span>
                             <span
                               className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${
-                                s.available
+                                bookable
                                   ? "bg-brand-accentBright/20 text-brand-accentBright"
                                   : "bg-white/10 text-white/50"
                               }`}
                             >
-                              {slotStatus(s)}
+                              {label}
                             </span>
-                            {s.available && (
+                            {bookable && (
                               <ChevronDown
                                 className={`h-4 w-4 shrink-0 text-brand-beige transition-transform ${
                                   open ? "rotate-180" : ""
@@ -288,6 +338,7 @@ export default function Booking({ services }: { services: BookableService[] }) {
                                 service={service}
                                 date={selectedDay.date}
                                 slot={s}
+                                company={usesCompany ? { participants, maxStrangers } : null}
                                 onBooked={setConfirmed}
                                 onSlotTaken={() => setReloadKey((k) => k + 1)}
                               />
@@ -321,16 +372,19 @@ function SlotBookingForm({
   service,
   date,
   slot,
+  company,
   onBooked,
   onSlotTaken,
 }: {
   service: BookableService;
   date: string;
   slot: Slot;
+  // Adults: chosen above the slot list. Kids: null, picked in this form.
+  company: { participants: number; maxStrangers: number | null } | null;
   onBooked: (c: Confirmation) => void;
   onSlotTaken: () => void;
 }) {
-  const [participants, setParticipants] = useState(1);
+  const [kidsCount, setKidsCount] = useState(1);
   const [openToOthers, setOpenToOthers] = useState(true);
   const [children, setChildren] = useState<{ name: string; age: string }[]>([
     { name: "", age: "" },
@@ -344,18 +398,24 @@ function SlotBookingForm({
   const maxParticipants = isGroup
     ? Math.min(service.capacity, slot.placesLeft ?? service.capacity)
     : MAX_PRIVATE_PARTICIPANTS;
-  const ok = canBook(slot, service.capacity, participants, isGroup && openToOthers, forKids);
+  const participants = company?.participants ?? kidsCount;
+  const maxStrangers = company ? company.maxStrangers : isGroup && openToOthers ? null : 0;
+  const ok = canBook(slot, participants, maxStrangers, forKids);
   const problem = ok
     ? null
     : slot.kids !== null && slot.kids !== forKids
       ? slot.kids
         ? "Această oră este doar pentru copii."
         : "La această oră s-au înscris deja adulți."
-      : "Grupa are deja jucători înscriși, așa că nu poate fi rezervată doar pentru tine.";
+      : slot.placesLeft !== null && participants > slot.placesLeft
+        ? `Mai sunt doar ${placesText(slot.placesLeft)} la această oră.`
+        : company
+          ? `La această oră sunt deja ${slot.taken} jucători înscriși. Bifează mai sus că accepți jucători străini ca să te alături.`
+          : "Grupa are deja jucători înscriși, așa că nu poate fi rezervată doar pentru tine.";
 
   // One name/age row per player when booking for children.
   function changeParticipants(n: number) {
-    setParticipants(n);
+    setKidsCount(n);
     setChildren((prev) => Array.from({ length: n }, (_, i) => prev[i] ?? { name: "", age: "" }));
   }
 
@@ -380,7 +440,8 @@ function SlotBookingForm({
           startTime: slot.time,
           level: field("level"),
           participants,
-          openToOthers: isGroup && openToOthers,
+          openToOthers: maxStrangers !== 0,
+          maxStrangers,
           children: forKids
             ? children.map((c) => ({ name: c.name.trim(), age: Number(c.age) }))
             : [],
@@ -428,6 +489,7 @@ function SlotBookingForm({
             ))}
           </select>
         </div>
+        {!company && (
         <div>
           <label htmlFor="form-participants" className="form-label">
             Număr de jucători *
@@ -445,6 +507,7 @@ function SlotBookingForm({
             ))}
           </select>
         </div>
+        )}
         {forKids && (
           <div className="space-y-2 sm:col-span-2">
             <p className="form-label">{participants === 1 ? "Copilul *" : "Copiii *"}</p>
@@ -473,7 +536,7 @@ function SlotBookingForm({
             ))}
           </div>
         )}
-        {isGroup && (
+        {isGroup && !company && (
           <label className="flex items-start gap-2 text-sm text-gray-200 sm:col-span-2">
             <input
               type="checkbox"
@@ -567,5 +630,111 @@ function SlotBookingForm({
         </span>
       </button>
     </form>
+  );
+}
+
+// "Vin cu prieteni" / "Accept jucători străini", for the adult course.
+// A session holds 4 players, so friends + strangers can't exceed 3.
+function CompanyPicker({
+  company,
+  onChange,
+}: {
+  company: Company;
+  onChange: (c: Company) => void;
+}) {
+  const { friends, strangers } = company;
+  const roomForStrangers = 3 - (friends ?? 0);
+  const players = 1 + (friends ?? 0);
+
+  function setFriends(next: number | null) {
+    const room = 3 - (next ?? 0);
+    // Keep the strangers choice within what the court still holds.
+    const s = room === 0 ? null : typeof strangers === "number" ? Math.min(strangers, room) : strangers;
+    onChange({ friends: next, strangers: s });
+  }
+
+  return (
+    <div className="space-y-3 rounded-xl border border-brand-gold/30 bg-white/5 p-4">
+      <p className="form-label mb-0">Cu cine joci?</p>
+
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <label className="flex items-center gap-2 text-sm text-gray-200">
+          <input
+            type="checkbox"
+            checked={friends !== null}
+            onChange={(e) => setFriends(e.target.checked ? 1 : null)}
+            className="h-5 w-5 shrink-0 accent-brand-accentBright"
+          />
+          Vin cu prieteni
+        </label>
+        {friends !== null && (
+          <select
+            aria-label="Câți prieteni"
+            value={friends}
+            onChange={(e) => setFriends(Number(e.target.value))}
+            className="form-select w-auto py-1.5"
+          >
+            {[1, 2, 3].map((n) => (
+              <option key={n} value={n}>
+                {n === 1 ? "1 prieten" : `${n} prieteni`}
+              </option>
+            ))}
+          </select>
+        )}
+      </div>
+
+      <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+        <label
+          className={`flex items-center gap-2 text-sm ${
+            roomForStrangers === 0 ? "text-gray-500" : "text-gray-200"
+          }`}
+        >
+          <input
+            type="checkbox"
+            checked={strangers !== null}
+            disabled={roomForStrangers === 0}
+            onChange={(e) => onChange({ friends, strangers: e.target.checked ? "any" : null })}
+            className="h-5 w-5 shrink-0 accent-brand-accentBright"
+          />
+          Accept jucători străini în sesiune
+        </label>
+        {strangers !== null && (
+          <select
+            aria-label="Câți jucători străini"
+            value={strangers}
+            onChange={(e) =>
+              onChange({
+                friends,
+                strangers: e.target.value === "any" ? "any" : Number(e.target.value),
+              })
+            }
+            className="form-select w-auto py-1.5"
+          >
+            {Array.from({ length: roomForStrangers }, (_, i) => i + 1).map((n) => (
+              <option key={n} value={n}>
+                {n === 1 ? "1 jucător" : `${n} jucători`}
+              </option>
+            ))}
+            <option value="any">Oricâți</option>
+          </select>
+        )}
+      </div>
+
+      <p className="text-xs text-brand-beige">
+        {players === 1 ? "Vii doar tu" : `Veniți ${players} jucători`}
+        {roomForStrangers === 0
+          ? ", terenul e complet."
+          : strangers === null
+            ? `, iar sesiunea rămâne doar pentru ${players === 1 ? "tine" : "voi"}.`
+            : strangers === "any"
+              ? ` și se pot alătura până la ${roomForStrangers} ${
+                  roomForStrangers === 1 ? "jucător străin" : "jucători străini"
+                }.`
+              : ` și se pot alătura până la ${strangers} ${
+                  strangers === 1 ? "jucător străin" : "jucători străini"
+                }.`}{" "}
+        Maxim 4 jucători pe sesiune.
+      </p>
+    </div>
   );
 }

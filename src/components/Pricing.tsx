@@ -3,7 +3,7 @@
 import { Check, Clock, Smile, UserCheck, type LucideIcon } from "lucide-react";
 import SectionHeading from "@/components/SectionHeading";
 import { useCourseSelection } from "@/components/CourseSelection";
-import { venueNames, type CourseSlug } from "@/lib/site";
+import { DEFAULT_SESSION_MIN, venueNames, type CourseSlug } from "@/lib/site";
 
 // All prices are per session and include the court rental; the amounts
 // and durations come from the database and are edited in the admin.
@@ -152,7 +152,7 @@ export default function Pricing({
                   {service && (
                     <li className="flex items-center gap-2">
                       <Clock className="h-4 w-4 shrink-0 text-brand-accent" />
-                      {service.durationMin} minute / ședință
+                      {DEFAULT_SESSION_MIN} minute / ședință
                     </li>
                   )}
                   {courtRental && (

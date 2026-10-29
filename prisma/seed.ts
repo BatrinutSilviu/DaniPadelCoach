@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import { venueNames } from "../src/lib/site";
+import { DEFAULT_SESSION_MIN, venueNames } from "../src/lib/site";
 
 const prisma = new PrismaClient();
 
@@ -27,8 +27,14 @@ async function main() {
   for (const s of services) {
     await prisma.service.upsert({
       where: { slug: s.slug },
-      create: s,
-      update: { name: s.name, forKids: s.forKids ?? false, isActive: true },
+      create: { ...s, durationMin: DEFAULT_SESSION_MIN },
+      // Lengths are set per slot now, so every course keeps the default.
+      update: {
+        name: s.name,
+        forKids: s.forKids ?? false,
+        isActive: true,
+        durationMin: DEFAULT_SESSION_MIN,
+      },
     });
   }
   // Courses dropped from the list above (e.g. the old "privat") are hidden

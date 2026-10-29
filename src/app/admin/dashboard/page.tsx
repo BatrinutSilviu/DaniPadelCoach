@@ -1,6 +1,7 @@
 import BookingsList from "@/components/admin/BookingsList";
 import AvailabilityEditor from "@/components/admin/AvailabilityEditor";
 import PricesEditor from "@/components/admin/PricesEditor";
+import SlotLengthsEditor from "@/components/admin/SlotLengthsEditor";
 import EventsEditor from "@/components/admin/EventsEditor";
 
 export default function DashboardPage() {
@@ -17,6 +18,9 @@ export default function DashboardPage() {
         <h2 className="text-2xl font-extrabold text-brand-forest">Disponibilitate</h2>
         <div className="mt-4">
           <AvailabilityEditor />
+        </div>
+        <div className="mt-6">
+          <SlotLengthsEditor />
         </div>
       </section>
 

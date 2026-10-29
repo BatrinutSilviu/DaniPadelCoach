@@ -20,7 +20,6 @@ interface ServiceVenue {
 interface Service {
   id: string;
   name: string;
-  durationMin: number;
   priceTiers: PriceTier[];
   venues: ServiceVenue[];
 }
@@ -29,8 +28,6 @@ export default function PricesEditor() {
   const [services, setServices] = useState<Service[] | null>(null);
   // Input text per price tier id, so a field can be left empty while typing.
   const [drafts, setDrafts] = useState<Record<string, string>>({});
-  // Session length input text per course id.
-  const [durations, setDurations] = useState<Record<string, string>>({});
   const [savingId, setSavingId] = useState<string | null>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -50,9 +47,6 @@ export default function PricesEditor() {
             .flatMap((s) => s.priceTiers)
             .map((t) => [t.id, t.price === null ? "" : String(t.price)]),
         ),
-      );
-      setDurations(
-        Object.fromEntries((data.services as Service[]).map((s) => [s.id, String(s.durationMin)])),
       );
     } catch {
       setError("Eroare de rețea la încărcarea prețurilor");
@@ -83,30 +77,6 @@ export default function PricesEditor() {
           venues: s.venues.map((v) => (v.id === venue.id ? { ...v, isOffered } : v)),
         })) ?? null,
       );
-    } catch {
-      setError("Eroare de rețea la salvare");
-    } finally {
-      setSavingId(null);
-    }
-  }
-
-  async function saveDuration(e: React.FormEvent, id: string) {
-    e.preventDefault();
-    setError(null);
-    setSavedId(null);
-    setSavingId(id);
-    try {
-      const res = await fetch(`/api/admin/services/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ durationMin: Number(durations[id]) }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => ({}));
-        setError(data.error ?? "Salvarea a eșuat");
-        return;
-      }
-      setSavedId(id);
     } catch {
       setError("Eroare de rețea la salvare");
     } finally {
@@ -157,39 +127,6 @@ export default function PricesEditor() {
         {services?.map((s) => (
           <div key={s.id} className="space-y-3">
             <h4 className="font-bold text-brand-forest">{s.name}</h4>
-            <form
-              onSubmit={(e) => saveDuration(e, s.id)}
-              className="space-y-2 rounded-xl border border-brand-gold/20 bg-brand-beigeLight/50 p-4"
-            >
-              <label className="admin-label" htmlFor={`duration-${s.id}`}>
-                Durata unei ședințe
-              </label>
-              <div className="flex items-center gap-2">
-                <input
-                  id={`duration-${s.id}`}
-                  type="number"
-                  min={15}
-                  max={240}
-                  step={15}
-                  inputMode="numeric"
-                  required
-                  className="admin-input"
-                  value={durations[s.id] ?? ""}
-                  onChange={(e) => {
-                    setSavedId(null);
-                    setDurations((d) => ({ ...d, [s.id]: e.target.value }));
-                  }}
-                />
-                <span className="text-sm text-gray-600">min</span>
-                <button type="submit" className="admin-btn-primary" disabled={savingId === s.id}>
-                  <Save className="h-4 w-4" />
-                  {savingId === s.id ? "Se salvează…" : "Salvează"}
-                </button>
-              </div>
-              {savedId === s.id && (
-                <p className="text-xs font-semibold text-brand-forest">Salvat</p>
-              )}
-            </form>
             {venueNames.map((venue) => {
               const sv = s.venues.find((v) => v.location === venue);
               return (

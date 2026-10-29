@@ -29,36 +29,40 @@ type BookedRange = {
   endTime: string;
   participants: number;
   openToOthers: boolean;
+  maxStrangers: number | null;
   forKids: boolean;
 };
 // Each slot belongs to exactly one venue.
 // placesLeft = free places in a group session; null for private lessons,
-// which are exclusive.
+// which are exclusive. It also respects how many strangers the people
+// already booked accept. taken = people already booked in the session.
 // kids = true: only bookings for children fit; false: only adults (a group
 // session adults already joined); null: either.
 export type Slot = {
   time: string;
+  durationMin: number;
   available: boolean;
   location: string;
   placesLeft: number | null;
+  taken: number;
   kids: boolean | null;
 };
 
-// Whether a booking of `participants` people fits in `slot`. Shared by the
-// booking form and the API.
+// Whether a booking of `participants` people fits in `slot`, given how many
+// strangers it accepts (null = any, 0 = none). Shared by the booking form
+// and the API.
 export function canBook(
   slot: Slot,
-  capacity: number,
   participants: number,
-  openToOthers: boolean,
+  maxStrangers: number | null,
   forKids: boolean,
 ): boolean {
   if (!slot.available) return false;
   if (slot.kids !== null && slot.kids !== forKids) return false;
   if (slot.placesLeft === null) return true;
   if (participants > slot.placesLeft) return false;
-  // A closed session needs the whole group to itself.
-  return openToOthers || slot.placesLeft === capacity;
+  // Everyone already booked is a stranger to the new booking.
+  return maxStrangers === null || slot.taken <= maxStrangers;
 }
 
 // Dani is one coach: a slot is free if nothing overlaps it, except other
@@ -69,9 +73,12 @@ function slotsForDay(params: {
   service: Service;
   windows: Window[];
   booked: BookedRange[];
+  // Start time → length, for slots the admin lengthened.
+  lengths: Map<string, number>;
   earliestStart: number;
 }): Slot[] {
-  const { service, windows, booked, earliestStart } = params;
+  const { service, windows, booked, lengths, earliestStart } = params;
+  const lengthAt = (start: number) => lengths.get(minutesToTime(start)) ?? service.durationMin;
   const isGroup = service.capacity > 1;
   const slots = new Map<number, Omit<Slot, "time"> & { windowKids: boolean }>();
 
@@ -80,14 +87,18 @@ function slotsForDay(params: {
     const windowEnd = timeToMinutes(window.endTime);
     for (
       let start = timeToMinutes(window.startTime);
-      start + service.durationMin <= windowEnd;
-      // Back-to-back sessions: an 18:00-20:00 window gives 18:00 and 19:00.
-      start += service.durationMin
+      start + lengthAt(start) <= windowEnd;
+      // Back-to-back sessions: an 18:00-20:00 window gives 18:00 and 19:00,
+      // or 18:00 and 19:30 when the 18:00 slot is 90 minutes.
+      start += lengthAt(start)
     ) {
       if (start < earliestStart) continue;
-      const end = start + service.durationMin;
+      const durationMin = lengthAt(start);
+      const end = start + durationMin;
 
       let used = 0;
+      // The session can't grow past what any booking in it accepts.
+      let limit = service.capacity;
       let blocked = false;
       // Kids and adults don't share a group session.
       let sessionKids: boolean | null = null;
@@ -97,21 +108,26 @@ function slotsForDay(params: {
         if (!(start < bEnd && end > bStart)) continue;
         if (b.serviceId === service.id && bStart === start && isGroup && b.openToOthers) {
           used += b.participants;
+          if (b.maxStrangers !== null) {
+            limit = Math.min(limit, b.participants + b.maxStrangers);
+          }
           sessionKids = b.forKids;
         } else {
           blocked = true;
           break;
         }
       }
-      const placesLeft = blocked ? 0 : Math.max(0, service.capacity - used);
+      const placesLeft = blocked ? 0 : Math.max(0, limit - used);
       const prev = slots.get(start);
       // Overlapping windows: kids-only only if all of them are.
       const windowKids = service.forKids || (window.kidsOnly && (prev?.windowKids ?? true));
       slots.set(start, {
+        durationMin,
         windowKids,
         kids: windowKids ? true : sessionKids,
         available: placesLeft > 0,
         placesLeft: isGroup ? placesLeft : null,
+        taken: blocked ? 0 : used,
         // A slot has one venue: where windows at different venues overlap,
         // the one that starts first keeps it.
         location: prev?.location ?? window.location,
@@ -127,17 +143,19 @@ function slotsForDay(params: {
 // Returns the start times for `service` on each day in
 // [fromDate, fromDate + days), each marked available or taken.
 // Days with no scheduled slot (closed, or already past today) are omitted.
+// minNoticeMin: how soon a slot may start today; the admin passes 0.
 export async function getAvailableSlots(
   db: Db,
   service: Service,
   fromDate: string,
   days: number,
+  minNoticeMin = MIN_NOTICE_MIN,
 ): Promise<{ date: string; slots: Slot[] }[]> {
   const today = todayDateStr();
   const start = fromDate < today ? today : fromDate;
   const end = addDays(start, days);
 
-  const [rules, exceptions, bookings, closedVenues] = await Promise.all([
+  const [rules, exceptions, bookings, closedVenues, slotLengths] = await Promise.all([
     db.availabilityRule.findMany({
       where: { OR: [{ serviceId: service.id }, { serviceId: null }] },
     }),
@@ -153,6 +171,7 @@ export async function getAvailableSlots(
         endTime: true,
         participants: true,
         openToOthers: true,
+        maxStrangers: true,
         forKids: true,
       },
     }),
@@ -160,6 +179,7 @@ export async function getAvailableSlots(
       where: { serviceId: service.id, isOffered: false },
       select: { location: true },
     }),
+    db.slotLength.findMany({ where: { date: { gte: start, lt: end } } }),
   ]);
   const offeredAt = (location: string) => !closedVenues.some((v) => v.location === location);
 
@@ -193,7 +213,10 @@ export async function getAvailableSlots(
       service,
       windows,
       booked: bookings.filter((b) => b.date === date),
-      earliestStart: date === today ? nowMinutesOfDay() + MIN_NOTICE_MIN : -Infinity,
+      lengths: new Map(
+        slotLengths.filter((l) => l.date === date).map((l) => [l.startTime, l.durationMin]),
+      ),
+      earliestStart: date === today ? nowMinutesOfDay() + minNoticeMin : -Infinity,
     });
     if (slots.length > 0) result.push({ date, slots });
   }
@@ -205,8 +228,9 @@ export async function getSlot(
   service: Service,
   date: string,
   startTime: string,
+  minNoticeMin = MIN_NOTICE_MIN,
 ): Promise<Slot | undefined> {
-  const [day] = await getAvailableSlots(db, service, date, 1);
+  const [day] = await getAvailableSlots(db, service, date, 1, minNoticeMin);
   if (day?.date !== date) return undefined;
   return day.slots.find((s) => s.time === startTime);
 }

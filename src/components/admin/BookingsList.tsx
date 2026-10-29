@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Check, MapPin, MessageSquare, Phone, Users, X } from "lucide-react";
 import { formatDateRo } from "@/lib/date";
+import ManualBookingForm from "./ManualBookingForm";
 
 type Status = "PENDING" | "CONFIRMED" | "CANCELLED";
 
@@ -19,9 +20,11 @@ interface Booking {
   level: string | null;
   participants: number;
   openToOthers: boolean;
+  maxStrangers: number | null;
   forKids: boolean;
   children: { id: string; name: string; age: number }[];
   status: Status;
+  byAdmin: boolean;
   service: { name: string };
 }
 
@@ -98,6 +101,8 @@ export default function BookingsList() {
 
   return (
     <div className="space-y-4">
+      <ManualBookingForm onCreated={load} />
+
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-2">
           {(["upcoming", "past"] as const).map((s) => (
@@ -154,6 +159,11 @@ export default function BookingsList() {
                 >
                   {STATUS_LABEL[b.status]}
                 </span>
+                {b.byAdmin && (
+                  <span className="rounded-md border border-brand-gold/40 bg-brand-beigeLight px-2 py-0.5 text-xs font-bold text-brand-forest">
+                    Adăugată manual
+                  </span>
+                )}
                 <span className="inline-block font-bold text-brand-forest first-letter:uppercase">
                   {formatDateRo(b.date)} · {b.startTime} - {b.endTime}
                 </span>
@@ -170,7 +180,16 @@ export default function BookingsList() {
                   {b.participants === 1 ? "1 jucător" : `${b.participants} jucători`}
                 </span>
                 {b.level && <span>· {b.level}</span>}
-                {!b.openToOthers && <span>· nu acceptă alți jucători</span>}
+                {!b.openToOthers ? (
+                  <span>· nu acceptă alți jucători</span>
+                ) : (
+                  b.maxStrangers !== null && (
+                    <span>
+                      · acceptă max. {b.maxStrangers}{" "}
+                      {b.maxStrangers === 1 ? "jucător străin" : "jucători străini"}
+                    </span>
+                  )
+                )}
               </p>
               {b.forKids && (
                 <p className="text-sm text-gray-700">
@@ -181,24 +200,29 @@ export default function BookingsList() {
                 </p>
               )}
               <p className="text-sm text-gray-700">
-                {b.clientName} · {b.clientPhone}
+                {b.clientName}
+                {b.clientPhone && <> · {b.clientPhone}</>}
                 {b.clientEmail && <> · {b.clientEmail}</>}
               </p>
               {b.notes && <p className="text-sm italic text-gray-500">„{b.notes}”</p>}
             </div>
 
             <div className="flex flex-wrap gap-2 md:justify-end">
-              <a href={`tel:${b.clientPhone.replace(/\s/g, "")}`} className="admin-btn-secondary">
-                <Phone className="h-3.5 w-3.5" /> Sună
-              </a>
-              <a
-                href={`https://wa.me/${whatsappNumber(b.clientPhone)}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="admin-btn-secondary"
-              >
-                <MessageSquare className="h-3.5 w-3.5" /> WhatsApp
-              </a>
+              {b.clientPhone && (
+                <>
+                  <a href={`tel:${b.clientPhone.replace(/\s/g, "")}`} className="admin-btn-secondary">
+                    <Phone className="h-3.5 w-3.5" /> Sună
+                  </a>
+                  <a
+                    href={`https://wa.me/${whatsappNumber(b.clientPhone)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="admin-btn-secondary"
+                  >
+                    <MessageSquare className="h-3.5 w-3.5" /> WhatsApp
+                  </a>
+                </>
+              )}
               {b.status === "PENDING" && (
                 <button
                   type="button"

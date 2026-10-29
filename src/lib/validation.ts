@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { isValidDateStr, isValidTimeStr } from "@/lib/date";
-import { levelChoices, venueNames } from "@/lib/site";
+import { levelChoices, SESSION_LENGTHS, venueNames } from "@/lib/site";
 
 const dateStr = z.string().refine(isValidDateStr, "Dată invalidă");
 const timeStr = z.string().refine(isValidTimeStr, "Oră invalidă");
@@ -21,7 +21,10 @@ export const bookingCreateSchema = z.object({
   startTime: timeStr,
   level: z.enum(levelChoices, { errorMap: () => ({ message: "Alege nivelul de joc" }) }),
   participants: z.number().int().min(1).max(20),
+  // Kids course: whether others may join the group.
   openToOthers: z.boolean(),
+  // Adult course: how many strangers may join; null = any, 0 = none.
+  maxStrangers: z.number().int().min(0).max(3).nullable().default(null),
   children: z.array(childSchema).max(20).default([]),
   clientName: z.string().trim().min(2, "Numele este prea scurt").max(100),
   clientPhone: z
@@ -38,6 +41,23 @@ export const bookingCreateSchema = z.object({
   notes: z.string().trim().max(500).optional(),
 });
 
+// A slot the admin occupies by hand. wholeSlot closes a group session
+// to anyone else; otherwise `participants` places are taken.
+export const manualBookingSchema = z.object({
+  serviceId: z.string().min(1),
+  date: dateStr,
+  startTime: timeStr,
+  participants: z.number().int().min(1).max(20),
+  wholeSlot: z.boolean(),
+  clientName: z.string().trim().max(100).default(""),
+  clientPhone: z
+    .string()
+    .trim()
+    .regex(/^(\+?[\d\s().-]{9,20})?$/, "Număr de telefon invalid")
+    .default(""),
+  notes: z.string().trim().max(500).optional(),
+});
+
 export const bookingStatusSchema = z.object({
   status: z.enum(["CONFIRMED", "CANCELLED"]),
 });
@@ -50,13 +70,13 @@ export const priceTierSchema = z.object({
   price: z.number().int().min(0, "Prețul nu poate fi negativ").max(10000).nullable(),
 });
 
-export const serviceSchema = z.object({
-  durationMin: z
-    .number()
-    .int()
-    .min(15, "Ședința trebuie să aibă cel puțin 15 minute")
-    .max(240, "Ședința poate avea cel mult 240 de minute")
-    .multipleOf(15, "Durata trebuie să fie multiplu de 15 minute"),
+// Admin: a slot's length; the default length clears the override.
+export const slotLengthSchema = z.object({
+  date: dateStr,
+  startTime: timeStr,
+  durationMin: z.union([z.literal(SESSION_LENGTHS[0]), z.literal(SESSION_LENGTHS[1])], {
+    errorMap: () => ({ message: "Durata poate fi 60 sau 90 de minute" }),
+  }),
 });
 
 export const serviceVenueSchema = z.object({

@@ -13,7 +13,7 @@ model Service {
   id          String             @id @default(cuid())
   slug        String             @unique
   name        String
-  // Session length, edited from the admin.
+  // Usual session length; single slots can be changed (SlotLength).
   durationMin Int                @default(60)
   capacity    Int                @default(1)
   // Every session of this course is for children.
@@ -55,6 +55,17 @@ model PriceTier {
   price     Int?
 
   @@unique([serviceId, label, location])
+}
+
+// A single slot (date + start time) the admin made longer than the
+// course's usual length; the following slots that day start after it.
+model SlotLength {
+  id          String @id @default(cuid())
+  date        String // "YYYY-MM-DD"
+  startTime   String // "HH:mm"
+  durationMin Int
+
+  @@unique([date, startTime])
 }
 
 // Recurring weekly window, e.g. "every Monday 17:00-18:30".
@@ -104,10 +115,15 @@ model Booking {
   participants Int     @default(1)
   // false = nobody else may join this group session.
   openToOthers Boolean @default(true)
+  // How many people from other bookings may share the session with this
+  // one: null = any, 0 = none (then openToOthers is false too).
+  maxStrangers Int?
   // Booked by a parent for children; one BookingChild per participant.
   forKids     Boolean  @default(false)
   children    BookingChild[]
   status      String   @default("PENDING")
+  // Added by the admin to occupy a slot (e.g. a phone booking).
+  byAdmin     Boolean  @default(false)
   createdAt   DateTime @default(now())
 
   @@index([date])

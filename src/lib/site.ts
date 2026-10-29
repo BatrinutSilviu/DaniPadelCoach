@@ -44,6 +44,11 @@ export const locations = [
 
 export const venueNames = ["Active Arena", "X3 Padel"] as const;
 
-export const levelChoices = ["Începător", "Intermediar", "Avansat"] as const;
+// Session lengths in minutes; the admin can switch single slots to the
+// second one. Prices on the site are always per DEFAULT_SESSION_MIN.
+export const SESSION_LENGTHS = [60, 90] as const;
+export const DEFAULT_SESSION_MIN = SESSION_LENGTHS[0];
+
+export const levelChoices = ["Începător", "Nivel 5", "Nivel 4", "Nivel 3"] as const;
 // Players on one padel court.
 export const MAX_PRIVATE_PARTICIPANTS = 4;
