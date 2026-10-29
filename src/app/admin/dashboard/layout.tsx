@@ -2,6 +2,14 @@ import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import LogoutButton from "@/components/admin/LogoutButton";
 
+// Matches the section ids in dashboard/page.tsx.
+const SECTIONS = [
+  ["programari", "Programări"],
+  ["disponibilitate", "Disponibilitate"],
+  ["preturi", "Prețuri"],
+  ["evenimente", "Evenimente"],
+] as const;
+
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <div>
@@ -27,7 +35,21 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </div>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">{children}</main>
+      {/* Quick jumps between the long dashboard sections, mostly for phones. */}
+      <nav className="sticky top-0 z-20 border-b border-brand-gold/20 bg-brand-beigeLight/95 backdrop-blur">
+        <div className="mx-auto flex max-w-6xl gap-1 overflow-x-auto px-4 py-2 sm:px-6">
+          {SECTIONS.map(([id, label]) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              className="shrink-0 rounded-lg px-3 py-2 text-sm font-bold text-brand-forest hover:bg-brand-forest/10"
+            >
+              {label}
+            </a>
+          ))}
+        </div>
+      </nav>
+      <main className="mx-auto max-w-6xl px-4 py-6 sm:px-6 sm:py-10">{children}</main>
     </div>
   );
 }

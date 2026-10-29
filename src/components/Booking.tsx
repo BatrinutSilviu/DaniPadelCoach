@@ -164,7 +164,7 @@ export default function Booking({ services }: { services: BookableService[] }) {
           </p>
         </div>
 
-        <div className="glass-card-dark space-y-6 rounded-2xl border border-brand-gold/30 p-4 shadow-2xl sm:p-8">
+        <div className="glass-card-dark space-y-6 rounded-2xl border border-brand-gold/30 p-3 shadow-2xl sm:p-8">
           {confirmed ? (
             <div className="space-y-4 py-4 text-center">
               <CircleCheck className="mx-auto h-14 w-14 text-brand-accentBright" />
@@ -285,7 +285,7 @@ export default function Booking({ services }: { services: BookableService[] }) {
                             disabled={!bookable}
                             aria-expanded={open}
                             onClick={() => setTime(open ? null : s.time)}
-                            className="flex w-full items-center gap-3 px-4 py-3 text-left disabled:cursor-not-allowed"
+                            className="flex w-full items-center gap-3 px-3 py-3 text-left disabled:cursor-not-allowed sm:px-4"
                           >
                             <span className="min-w-0 flex-1">
                               <span
@@ -314,6 +314,13 @@ export default function Booking({ services }: { services: BookableService[] }) {
                                   </span>
                                 )}
                               </span>
+                              {/* Who is already in the session, so joiners know the level. */}
+                              {bookable && s.taken > 0 && (
+                                <span className="mt-0.5 block text-xs text-brand-beige">
+                                  Deja {s.taken === 1 ? "înscris 1 jucător" : `înscriși ${s.taken} jucători`}
+                                  {s.levels.length > 0 && ` · ${s.levels.join(", ")}`}
+                                </span>
+                              )}
                             </span>
                             <span
                               className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${
@@ -333,7 +340,7 @@ export default function Booking({ services }: { services: BookableService[] }) {
                             )}
                           </button>
                           {open && (
-                            <div className="border-t border-white/10 px-4 py-4">
+                            <div className="border-t border-white/10 px-3 py-4 sm:px-4">
                               <SlotBookingForm
                                 service={service}
                                 date={selectedDay.date}

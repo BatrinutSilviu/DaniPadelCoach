@@ -6,15 +6,15 @@ import EventsEditor from "@/components/admin/EventsEditor";
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-14">
-      <section>
+    <div className="space-y-10 sm:space-y-14">
+      <section id="programari" className="scroll-mt-16">
         <h2 className="text-2xl font-extrabold text-brand-forest">Programări</h2>
         <div className="mt-4">
           <BookingsList />
         </div>
       </section>
 
-      <section>
+      <section id="disponibilitate" className="scroll-mt-16">
         <h2 className="text-2xl font-extrabold text-brand-forest">Disponibilitate</h2>
         <div className="mt-4">
           <AvailabilityEditor />
@@ -24,14 +24,14 @@ export default function DashboardPage() {
         </div>
       </section>
 
-      <section>
+      <section id="preturi" className="scroll-mt-16">
         <h2 className="text-2xl font-extrabold text-brand-forest">Prețuri</h2>
         <div className="mt-4">
           <PricesEditor />
         </div>
       </section>
 
-      <section>
+      <section id="evenimente" className="scroll-mt-16">
         <h2 className="text-2xl font-extrabold text-brand-forest">Evenimente</h2>
         <div className="mt-4">
           <EventsEditor />

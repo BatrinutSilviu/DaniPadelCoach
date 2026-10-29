@@ -31,11 +31,13 @@ type BookedRange = {
   openToOthers: boolean;
   maxStrangers: number | null;
   forKids: boolean;
+  level: string | null;
 };
 // Each slot belongs to exactly one venue.
 // placesLeft = free places in a group session; null for private lessons,
 // which are exclusive. It also respects how many strangers the people
-// already booked accept. taken = people already booked in the session.
+// already booked accept. taken = people already booked in the session,
+// levels = the playing levels they chose (shown to whoever joins).
 // kids = true: only bookings for children fit; false: only adults (a group
 // session adults already joined); null: either.
 export type Slot = {
@@ -45,6 +47,7 @@ export type Slot = {
   location: string;
   placesLeft: number | null;
   taken: number;
+  levels: string[];
   kids: boolean | null;
 };
 
@@ -97,6 +100,7 @@ function slotsForDay(params: {
       const end = start + durationMin;
 
       let used = 0;
+      const levels: string[] = [];
       // The session can't grow past what any booking in it accepts.
       let limit = service.capacity;
       let blocked = false;
@@ -108,6 +112,7 @@ function slotsForDay(params: {
         if (!(start < bEnd && end > bStart)) continue;
         if (b.serviceId === service.id && bStart === start && isGroup && b.openToOthers) {
           used += b.participants;
+          if (b.level && !levels.includes(b.level)) levels.push(b.level);
           if (b.maxStrangers !== null) {
             limit = Math.min(limit, b.participants + b.maxStrangers);
           }
@@ -128,6 +133,7 @@ function slotsForDay(params: {
         available: placesLeft > 0,
         placesLeft: isGroup ? placesLeft : null,
         taken: blocked ? 0 : used,
+        levels: blocked ? [] : levels,
         // A slot has one venue: where windows at different venues overlap,
         // the one that starts first keeps it.
         location: prev?.location ?? window.location,
@@ -173,6 +179,7 @@ export async function getAvailableSlots(
         openToOthers: true,
         maxStrangers: true,
         forKids: true,
+        level: true,
       },
     }),
     db.serviceVenue.findMany({
