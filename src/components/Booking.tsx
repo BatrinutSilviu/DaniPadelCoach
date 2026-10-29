@@ -334,7 +334,7 @@ export default function Booking({ services }: { services: BookableService[] }) {
                               )}
                             </span>
                             <span
-                              className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-bold ${
+                              className={`max-w-[5.5rem] shrink-0 rounded-full px-2 py-0.5 text-center text-xs font-bold leading-tight min-[360px]:max-w-none ${
                                 bookable
                                   ? "bg-brand-accentBright/20 text-brand-accentBright"
                                   : "bg-white/10 text-white/50"

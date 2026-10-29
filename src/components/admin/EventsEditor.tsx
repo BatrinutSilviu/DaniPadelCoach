@@ -95,8 +95,8 @@ export default function EventsEditor() {
           </p>
         </div>
 
-        <form onSubmit={handleAdd} className="grid grid-cols-2 gap-3">
-          <div className="col-span-2">
+        <form onSubmit={handleAdd} className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2">
+          <div className="min-[380px]:col-span-2">
             <label className="admin-label">Titlu</label>
             <input
               className="admin-input"
@@ -124,7 +124,7 @@ export default function EventsEditor() {
               onChange={(e) => setStartTime(e.target.value)}
             />
           </div>
-          <div className="col-span-2">
+          <div className="min-[380px]:col-span-2">
             <label className="admin-label">Locație</label>
             <input
               className="admin-input"
@@ -139,7 +139,7 @@ export default function EventsEditor() {
               ))}
             </datalist>
           </div>
-          <div className="col-span-2">
+          <div className="min-[380px]:col-span-2">
             <label className="admin-label">Descriere</label>
             <textarea
               className="admin-input"
@@ -149,7 +149,7 @@ export default function EventsEditor() {
               onChange={(e) => setDescription(e.target.value)}
             />
           </div>
-          <button type="submit" className="admin-btn-primary col-span-2" disabled={saving}>
+          <button type="submit" className="admin-btn-primary min-[380px]:col-span-2" disabled={saving}>
             <Plus className="h-4 w-4" />
             {saving ? "Se adaugă…" : "Adaugă evenimentul"}
           </button>

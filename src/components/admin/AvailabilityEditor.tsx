@@ -38,7 +38,7 @@ const NO_VENUE_LABEL = "Fără locație – nu apare la rezervări";
 
 function KidsCheckbox({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <label className="col-span-2 flex items-center gap-2 text-sm text-gray-700">
+    <label className="min-[380px]:col-span-2 flex items-center gap-2 text-sm text-gray-700">
       <input
         type="checkbox"
         checked={checked}
@@ -60,7 +60,7 @@ function KidsBadge() {
 
 function VenueSelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   return (
-    <div className="col-span-2">
+    <div className="min-[380px]:col-span-2">
       <label className="admin-label">Locație</label>
       <select className="admin-input" value={value} onChange={(e) => onChange(e.target.value)}>
         {venueNames.map((v) => (
@@ -211,7 +211,7 @@ export default function AvailabilityEditor() {
           </p>
         </div>
 
-        <form onSubmit={handleAddRule} className="grid grid-cols-2 gap-3">
+        <form onSubmit={handleAddRule} className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2">
           <div>
             <label className="admin-label">Zi</label>
             <select
@@ -261,7 +261,7 @@ export default function AvailabilityEditor() {
           <VenueSelect value={ruleLocation} onChange={setRuleLocation} />
           <button
             type="submit"
-            className="admin-btn-primary col-span-2"
+            className="admin-btn-primary min-[380px]:col-span-2"
             disabled={savingRule || !ruleServiceId}
           >
             <Plus className="h-4 w-4" />
@@ -326,8 +326,8 @@ export default function AvailabilityEditor() {
           </p>
         </div>
 
-        <form onSubmit={handleAddException} className="grid grid-cols-2 gap-3">
-          <div className="col-span-2 sm:col-span-1">
+        <form onSubmit={handleAddException} className="grid grid-cols-1 gap-3 min-[380px]:grid-cols-2">
+          <div className="min-[380px]:col-span-2 sm:col-span-1">
             <label className="admin-label">Dată</label>
             <input
               type="date"
@@ -337,7 +337,7 @@ export default function AvailabilityEditor() {
               onChange={(e) => setExDate(e.target.value)}
             />
           </div>
-          <label className="col-span-2 flex items-center gap-2 text-sm text-gray-700 sm:col-span-1 sm:mt-5">
+          <label className="min-[380px]:col-span-2 flex items-center gap-2 text-sm text-gray-700 sm:col-span-1 sm:mt-5">
             <input
               type="checkbox"
               checked={exClosed}
@@ -372,7 +372,7 @@ export default function AvailabilityEditor() {
           )}
           <button
             type="submit"
-            className="admin-btn-primary col-span-2"
+            className="admin-btn-primary min-[380px]:col-span-2"
             disabled={savingException}
           >
             <Plus className="h-4 w-4" />

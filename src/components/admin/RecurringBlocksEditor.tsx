@@ -112,7 +112,7 @@ export default function RecurringBlocksEditor() {
         </p>
       </div>
 
-      <form onSubmit={add} className="grid grid-cols-2 gap-4">
+      <form onSubmit={add} className="grid grid-cols-1 gap-4 min-[380px]:grid-cols-2">
         <div>
           <label htmlFor="block-day" className="admin-label">Zi</label>
           <select
@@ -140,7 +140,7 @@ export default function RecurringBlocksEditor() {
             onChange={(e) => setStartTime(e.target.value)}
           />
         </div>
-        <div className="col-span-2">
+        <div className="min-[380px]:col-span-2">
           <label htmlFor="block-label" className="admin-label">Pentru cine / notă (opțional)</label>
           <input
             id="block-label"
@@ -173,7 +173,7 @@ export default function RecurringBlocksEditor() {
             onChange={(e) => setEndDate(e.target.value)}
           />
         </div>
-        <div className="col-span-2">
+        <div className="min-[380px]:col-span-2">
           <button type="submit" className="admin-btn-primary" disabled={saving}>
             <Plus className="h-4 w-4" />
             {saving ? "Se salvează…" : "Ocupă săptămânal"}

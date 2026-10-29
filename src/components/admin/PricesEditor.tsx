@@ -160,7 +160,7 @@ export default function PricesEditor() {
                           min={0}
                           step={1}
                           inputMode="numeric"
-                          className="admin-input"
+                          className="admin-input min-w-0"
                           value={drafts[t.id] ?? ""}
                           onChange={(e) => {
                             setSavedId(null);
@@ -168,9 +168,17 @@ export default function PricesEditor() {
                           }}
                         />
                         <span className="text-sm text-gray-600">lei</span>
-                        <button type="submit" className="admin-btn-primary" disabled={savingId === t.id}>
+                        <button
+                          type="submit"
+                          aria-label="Salvează"
+                          className="admin-btn-primary shrink-0 px-3 min-[380px]:px-5"
+                          disabled={savingId === t.id}
+                        >
                           <Save className="h-4 w-4" />
-                          {savingId === t.id ? "Se salvează…" : "Salvează"}
+                          {/* Icon only on the narrowest phones, so the amount stays readable. */}
+                          <span className="hidden min-[380px]:inline">
+                            {savingId === t.id ? "Se salvează…" : "Salvează"}
+                          </span>
                         </button>
                       </div>
                       {savedId === t.id && (

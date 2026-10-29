@@ -61,7 +61,7 @@ section[id] {
   }
 
   .admin-input {
-    @apply w-full rounded-xl border border-brand-gold/40 bg-white px-4 py-2.5 text-base text-gray-800 focus:border-brand-forest sm:text-sm focus:outline-none focus:ring-1 focus:ring-brand-forest;
+    @apply w-full rounded-xl border border-brand-gold/40 bg-white px-3 py-2.5 text-base sm:px-4 text-gray-800 focus:border-brand-forest sm:text-sm focus:outline-none focus:ring-1 focus:ring-brand-forest;
   }
 
   .admin-label {
