@@ -50,6 +50,15 @@ export const priceTierSchema = z.object({
   price: z.number().int().min(0, "Prețul nu poate fi negativ").max(10000).nullable(),
 });
 
+export const serviceSchema = z.object({
+  durationMin: z
+    .number()
+    .int()
+    .min(15, "Ședința trebuie să aibă cel puțin 15 minute")
+    .max(240, "Ședința poate avea cel mult 240 de minute")
+    .multipleOf(15, "Durata trebuie să fie multiplu de 15 minute"),
+});
+
 export const serviceVenueSchema = z.object({
   isOffered: z.boolean(),
 });

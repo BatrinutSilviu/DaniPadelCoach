@@ -13,7 +13,8 @@ model Service {
   id          String             @id @default(cuid())
   slug        String             @unique
   name        String
-  durationMin Int
+  // Session length, edited from the admin.
+  durationMin Int                @default(60)
   capacity    Int                @default(1)
   // Every session of this course is for children.
   forKids     Boolean            @default(false)

@@ -12,6 +12,7 @@ export async function GET() {
     select: {
       id: true,
       name: true,
+      durationMin: true,
       priceTiers: {
         orderBy: { order: "asc" },
         select: { id: true, label: true, location: true, price: true },
