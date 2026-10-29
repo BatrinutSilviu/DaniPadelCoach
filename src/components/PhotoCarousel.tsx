@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 
 export type CarouselPhoto = { src: string; alt: string };
 
-const INTERVAL_MS = 5000;
+const INTERVAL_MS = 3000;
 
 export default function PhotoCarousel({
   photos,
