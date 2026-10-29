@@ -1,7 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { isAdminRequest } from "@/lib/adminGuard";
 import { bookingStatusSchema, firstIssue } from "@/lib/validation";
+import { emailClient } from "@/lib/notify";
 
 // Admin only: confirm or cancel a booking.
 export async function PATCH(
@@ -33,6 +34,10 @@ export async function PATCH(
   const updated = await prisma.booking.update({
     where: { id },
     data: { status: parsed.data.status },
+    include: { service: true },
   });
+  if (booking.status !== "CONFIRMED" && updated.status === "CONFIRMED") {
+    after(() => emailClient(updated, "confirmed"));
+  }
   return NextResponse.json({ booking: updated });
 }

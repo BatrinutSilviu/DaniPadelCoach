@@ -6,7 +6,7 @@ import { canBook, getSlot } from "@/lib/availability";
 import { MAX_PRIVATE_PARTICIPANTS } from "@/lib/site";
 import { isAdminRequest } from "@/lib/adminGuard";
 import { isHiddenFromVisitor } from "@/lib/maintenance";
-import { notifyNewBooking } from "@/lib/notify";
+import { emailClient, notifyNewBooking } from "@/lib/notify";
 
 export async function POST(req: NextRequest) {
   if (await isHiddenFromVisitor()) {
@@ -71,7 +71,7 @@ export async function POST(req: NextRequest) {
       });
     });
 
-    after(() => notifyNewBooking(booking));
+    after(() => Promise.all([notifyNewBooking(booking), emailClient(booking, "received")]));
     return NextResponse.json({ booking }, { status: 201 });
   } catch (err) {
     if (err instanceof Error && err.message === "SLOT_UNAVAILABLE") {

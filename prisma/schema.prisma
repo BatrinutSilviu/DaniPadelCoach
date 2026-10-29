@@ -124,6 +124,8 @@ model Booking {
   status      String   @default("PENDING")
   // Added by the admin to occupy a slot (e.g. a phone booking).
   byAdmin     Boolean  @default(false)
+  // When the 10:00 reminder email went out on the day of the session.
+  reminderSentAt DateTime?
   createdAt   DateTime @default(now())
 
   @@index([date])
