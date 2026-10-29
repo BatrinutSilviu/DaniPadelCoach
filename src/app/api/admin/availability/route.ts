@@ -9,6 +9,8 @@ export async function GET() {
   }
   const [rules, services] = await Promise.all([
     prisma.availabilityRule.findMany({
+      // Rules of retired courses can't be booked, so they aren't listed.
+      where: { OR: [{ serviceId: null }, { service: { isActive: true } }] },
       include: { service: { select: { name: true } } },
       orderBy: [{ dayOfWeek: "asc" }, { startTime: "asc" }],
     }),

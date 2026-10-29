@@ -21,16 +21,22 @@ const rules: {
 
 async function main() {
   const services = [
-    { slug: "adulti", name: "Padel adulți", durationMin: 60, capacity: 4, order: 0 },
-    { slug: "copii", name: "Padel copii", durationMin: 60, capacity: 8, order: 1, forKids: true },
+    { slug: "adulti", name: "Padel adulți", capacity: 4, order: 0 },
+    { slug: "copii", name: "Padel copii", capacity: 8, order: 1, forKids: true },
   ];
   for (const s of services) {
     await prisma.service.upsert({
       where: { slug: s.slug },
       create: s,
-      update: { name: s.name, forKids: s.forKids ?? false },
+      update: { name: s.name, forKids: s.forKids ?? false, isActive: true },
     });
   }
+  // Courses dropped from the list above (e.g. the old "privat") are hidden
+  // rather than deleted, so their past bookings keep their course.
+  await prisma.service.updateMany({
+    where: { slug: { notIn: services.map((s) => s.slug) } },
+    data: { isActive: false },
+  });
 
   // Every course starts out offered at every venue; the admin turns them off.
   for (const service of await prisma.service.findMany()) {
