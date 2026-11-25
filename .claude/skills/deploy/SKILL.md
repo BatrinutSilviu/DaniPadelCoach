@@ -1,6 +1,6 @@
 ---
 name: deploy
-description: Push the current work to main and watch the GitHub Actions deploy of the dani-padel site to the VPS until it finishes; if the server step fails, run the same deploy commands on the VPS directly. Use when the user says "push", "deploy", "ship it" or "put it live" in this project.
+description: Push the current work to main and let the GitHub Actions deploy of the dani-padel site put it on the VPS (Claude doesn't watch it). Only if the user says it isn't live: check the run, and if the server step failed, run the same deploy commands on the VPS directly. Use when the user says "push", "deploy", "ship it" or "put it live" in this project.
 ---
 
 # Deploy dani-padel
@@ -22,9 +22,10 @@ Report in plain words (is it live or not, and what to do), not in CI jargon.
 ## Steps
 
 1. **Commit.** `git fetch -q`, then `git status -sb`.
-   - If there are uncommitted code changes, first run the two passes from CLAUDE.md ("Before every
-     commit"): the `simplify` skill, then the `code-review` skill with args `high --fix`. Let them
-     apply their fixes.
+   - If there are uncommitted code changes, first run the passes from CLAUDE.md ("Before every
+     commit"): the `simplify` skill, the `code-review` skill with args `high --fix`, then the
+     `security-review` skill (skipped for purely visual changes). Let them apply their fixes. A hook
+     runs the tests / type check / lint on `git commit` and blocks it if they fail: fix and commit again.
    - Then stage the changes and commit with a message in the style of `git log` (short, imperative,
      says what changed for the people using the site), ending with the attribution lines from the
      system reminder.
@@ -35,27 +36,29 @@ Report in plain words (is it live or not, and what to do), not in CI jargon.
 
 3. **Push.** `timeout 90 git push`. If it's rejected because origin moved, go back to step 2.
 
-4. **Watch the deploy** in the background (`run_in_background: true`) so the user isn't blocked, and
-   tell them it's running. The repo is public, so the API needs no login:
+4. **Tell the user it's deploying, and stop.** Say it'll be live in a few
+   minutes and to reload the page then. Don't watch the GitHub Actions run or poll its API, not even in
+   the background: the user asked not to (it was slow, noisy and hit GitHub's rate limit).
 
-   ```bash
-   sleep 20; sha=$(git rev-parse HEAD); for i in $(seq 1 55); do
-     r=$(curl -s "https://api.github.com/repos/BatrinutSilviu/DaniPadelCoach/actions/runs?head_sha=$sha" \
-       | python3 -c "import sys,json;w=json.load(sys.stdin)['workflow_runs'];print(w[0]['status'],w[0]['conclusion'],w[0]['html_url']) if w else print('none')" 2>/dev/null)
-     case "$r" in completed*) echo "$r"; exit 0;; esac; sleep 30
-   done; echo "still: $r"
-   ```
+## Only if the user says it isn't live (or asks how the deploy went)
 
-5. **Check it started.** Even on success, the workflow doesn't wait for the app:
-   `ssh -o BatchMode=yes active-vps 'sleep 15; docker ps --filter name=dani-padel --format "{{.Status}}"; docker logs --tail 20 dani-padel'`.
-   "Restarting" or a `db push` error in the logs means the schema change was refused (see above).
+Look at the run once (the repo is public, so the API needs no login):
 
-6. **Report.**
-   - Success and the container is up: tell the user it's live and to reload the page.
-   - Failed at the SSH step: the VPS often resets SSH connections from GitHub. The user has allowed
-     running the deploy on the server directly (see the `vps` skill for the connection):
-     `ssh -o BatchMode=yes active-vps 'cd ~/Projects/dani-padel && git fetch origin main && git reset --hard origin/main && docker compose up -d --build && docker image prune -f'`
-     If the connection itself is reset, retry it a few times. If the build fails, report the error.
+```bash
+curl -s "https://api.github.com/repos/BatrinutSilviu/DaniPadelCoach/actions/runs?head_sha=$(git rev-parse HEAD)" \
+  | python3 -c "import sys,json;w=json.load(sys.stdin)['workflow_runs'];print(w[0]['status'],w[0]['conclusion'],w[0]['id'],w[0]['html_url']) if w else print('none')"
+```
+
+Which step failed: `curl -s https://api.github.com/repos/BatrinutSilviu/DaniPadelCoach/actions/runs/<id>/jobs | python3 -c "import sys,json;[print(s['name'],s['conclusion']) for j in json.load(sys.stdin)['jobs'] for s in j['steps']]"`
+
+- Succeeded but the site is broken: even on success, the workflow doesn't wait for the app:
+  `ssh -o BatchMode=yes active-vps 'sleep 15; docker ps --filter name=dani-padel --format "{{.Status}}"; docker logs --tail 20 dani-padel'`.
+  "Restarting" or a `db push` error in the logs means the schema change was refused (see above).
+
+- Failed at the SSH step: the VPS often resets SSH connections from GitHub. The user has allowed
+  running the deploy on the server directly (see the `vps` skill for the connection):
+  `ssh -o BatchMode=yes active-vps 'cd ~/Projects/dani-padel && git fetch origin main && git reset --hard origin/main && docker compose up -d --build && docker image prune -f'`
+  If the connection itself is reset, retry it a few times. If the build fails, report the error.
 
 ## Don't
 
